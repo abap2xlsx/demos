@@ -5,6 +5,15 @@
    <MASTER_LANGUAGE>E</MASTER_LANGUAGE>
    <STARTING_FOLDER>/src/</STARTING_FOLDER>
    <FOLDER_LOGIC>PREFIX</FOLDER_LOGIC>
+   <IGNORE>
+    <item>/.gitignore</item>
+    <item>/LICENSE</item>
+    <item>/README.md</item>
+    <item>/package.json</item>
+    <item>/.travis.yml</item>
+    <item>/_config.yml</item>
+    <item>/abaplint.json</item>
+   </IGNORE>
   </DATA>
  </asx:values>
 </asx:abap>
