@@ -5,7 +5,13 @@
     "skipGeneratedFunctionGroups": true,
     "skipGeneratedPersistentClasses": true
   },
-  "dependencies": [],
+  "dependencies": [
+    {
+      "url": "https://github.com/abap2xlsx/abap2xlsx",
+      "folder": "/abap2xlsx",
+      "files": "/src/**/*.*"
+    }
+  ],
   "syntax": {
     "version": "v702",
     "errorNamespace": "^(Z|Y)",
