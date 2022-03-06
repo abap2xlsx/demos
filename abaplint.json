@@ -9,7 +9,7 @@
     {
       "url": "https://github.com/abap2xlsx/abap2xlsx",
       "folder": "/abap2xlsx",
-      "files": "/src/**/*.*"
+      "files": "/src/*.*"
     }
   ],
   "syntax": {
