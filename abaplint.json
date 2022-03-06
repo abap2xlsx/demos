@@ -5,13 +5,7 @@
     "skipGeneratedFunctionGroups": true,
     "skipGeneratedPersistentClasses": true
   },
-  "dependencies": [
-    {
-      "url": "https://github.com/abaplint/deps",
-      "folder": "/deps",
-      "files": "/src/**/*.*"
-    }
-  ],
+  "dependencies": [],
   "syntax": {
     "version": "v702",
     "errorNamespace": "^(Z|Y)",
