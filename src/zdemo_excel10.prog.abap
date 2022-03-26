@@ -22,6 +22,7 @@ DATA: lt_field_catalog  TYPE zexcel_t_fieldcatalog,
 CONSTANTS: gc_save_file_name TYPE string VALUE '10_iTabFieldCatalog.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 
+PARAMETERS p_hdrshw TYPE abap_bool DEFAULT abap_true.
 
 START-OF-SELECTION.
 
@@ -34,24 +35,27 @@ START-OF-SELECTION.
   lo_worksheet = lo_excel->get_active_worksheet( ).
   lo_worksheet->set_title( 'Internal table' ).
 
-  ls_iconset-iconset                  = zcl_excel_style_cond=>c_iconset_5arrows.
-  ls_iconset-cfvo1_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
-  ls_iconset-cfvo1_value              = '0'.
-  ls_iconset-cfvo2_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
-  ls_iconset-cfvo2_value              = '20'.
-  ls_iconset-cfvo3_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
-  ls_iconset-cfvo3_value              = '40'.
-  ls_iconset-cfvo4_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
-  ls_iconset-cfvo4_value              = '60'.
-  ls_iconset-cfvo5_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
-  ls_iconset-cfvo5_value              = '80'.
-  ls_iconset-showvalue                = zcl_excel_style_cond=>c_showvalue_true.
+  IF p_hdrshw = abap_true.
+* Only relevant when the headerline is shown (default case)
+    ls_iconset-iconset                  = zcl_excel_style_cond=>c_iconset_5arrows.
+    ls_iconset-cfvo1_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
+    ls_iconset-cfvo1_value              = '0'.
+    ls_iconset-cfvo2_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
+    ls_iconset-cfvo2_value              = '20'.
+    ls_iconset-cfvo3_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
+    ls_iconset-cfvo3_value              = '40'.
+    ls_iconset-cfvo4_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
+    ls_iconset-cfvo4_value              = '60'.
+    ls_iconset-cfvo5_type               = zcl_excel_style_cond=>c_cfvo_type_percent.
+    ls_iconset-cfvo5_value              = '80'.
+    ls_iconset-showvalue                = zcl_excel_style_cond=>c_showvalue_true.
 
-  "cond style
-  lo_style_cond = lo_worksheet->add_new_style_cond( ).
-  lo_style_cond->rule         = zcl_excel_style_cond=>c_rule_iconset.
-  lo_style_cond->mode_iconset = ls_iconset.
-  lo_style_cond->priority     = 1.
+    "cond style
+    lo_style_cond = lo_worksheet->add_new_style_cond( ).
+    lo_style_cond->rule         = zcl_excel_style_cond=>c_rule_iconset.
+    lo_style_cond->mode_iconset = ls_iconset.
+    lo_style_cond->priority     = 1.
+  ENDIF.
 
   DATA lt_test TYPE ty_sflight_lines.
   PERFORM load_fixed_data CHANGING lt_test.
@@ -77,7 +81,9 @@ START-OF-SELECTION.
         <fs_field_catalog>-position   = 1.
         <fs_field_catalog>-dynpfld    = abap_true.
         <fs_field_catalog>-totals_function = zcl_excel_table=>totals_function_sum.
-        <fs_field_catalog>-style_cond = lo_style_cond->get_guid( ).
+        IF p_hdrshw = abap_true.
+          <fs_field_catalog>-style_cond = lo_style_cond->get_guid( ).
+        ENDIF.
       WHEN OTHERS.
         <fs_field_catalog>-dynpfld = abap_false.
     ENDCASE.
@@ -87,7 +93,9 @@ START-OF-SELECTION.
 
   lo_worksheet->bind_table( ip_table          = lt_test
                             is_table_settings = ls_table_settings
-                            it_field_catalog  = lt_field_catalog ).
+                            it_field_catalog  = lt_field_catalog
+                            is_show_headerline = p_hdrshw
+                            ).
 
   lo_column = lo_worksheet->get_column( ip_column = 'D' ). "make date field a bit wider
   lo_column->set_width( ip_width = 13 ).

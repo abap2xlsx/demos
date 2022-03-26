@@ -14,7 +14,13 @@
     <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Format internal table with field catalog</ENTRY>
-     <LENGTH>57</LENGTH>
+     <LENGTH>56</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_HDRSHW</KEY>
+     <ENTRY>Show headerline</ENTRY>
+     <LENGTH>23</LENGTH>
     </item>
     <item>
      <ID>S</ID>
