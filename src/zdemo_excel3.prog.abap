@@ -66,7 +66,7 @@ START-OF-SELECTION.
       'Airline;Flight Number;Date;Airfare;Airline Currency;Plane Type;Max. capacity econ.;Occupied econ.;Total;Max. capacity bus.;Occupied bus.;Max. capacity 1st;Occupied 1st'.
   ENDIF.
 
-  lo_worksheet->freeze_panes( ip_num_rows = 3 ). "freeze column headers when scrolling
+  lo_worksheet->freeze_panes( ip_num_columns = 1 ip_num_rows = 3 ). "freeze column headers when scrolling
   IF lines( lt_test ) >= 1.
     ls_error-cell_coords = |B2:B{ lines( lt_test ) + 1 }|.
     ls_error-number_stored_as_text = abap_true.
