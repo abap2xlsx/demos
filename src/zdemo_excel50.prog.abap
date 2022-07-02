@@ -1,12 +1,12 @@
 *&---------------------------------------------------------------------*
-*& Report  ZDEMO_EXCEL3
+*& Report  ZDEMO_EXCEL50
 *&
 *&---------------------------------------------------------------------*
-*&
+*& Like ZDEMO_EXCEL3 but with ZCL_EXCEL_WRITER_HUGE_FILE writer class
 *&
 *&---------------------------------------------------------------------*
 
-REPORT zdemo_excel3.
+REPORT zdemo_excel50.
 
 TYPES: ty_sflight_lines TYPE TABLE OF sflight,
        ty_scarr_lines   TYPE TABLE OF scarr.
@@ -30,7 +30,7 @@ FIELD-SYMBOLS: <carr> LIKE LINE OF lt_carr.
 CONSTANTS: c_airlines TYPE string VALUE 'Airlines'.
 
 
-CONSTANTS: gc_save_file_name TYPE string VALUE '03_iTab.xlsx'.
+CONSTANTS: gc_save_file_name TYPE string VALUE '50_iTab.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 
 PARAMETERS: p_empty TYPE flag.
@@ -54,9 +54,9 @@ START-OF-SELECTION.
     ENDIF.
   ENDIF.
 
-  ls_table_settings-table_style       = zcl_excel_table=>builtinstyle_medium2.
-  ls_table_settings-show_row_stripes  = abap_true.
-  ls_table_settings-nofilters         = abap_true.
+  ls_table_settings-table_style      = zcl_excel_table=>builtinstyle_medium2.
+  ls_table_settings-show_row_stripes = abap_true.
+  ls_table_settings-nofilters        = abap_true.
 
   lo_worksheet->bind_table( ip_table          = lt_test
                             is_table_settings = ls_table_settings ).
@@ -109,7 +109,7 @@ START-OF-SELECTION.
   lo_data_validation->cell_column = 'C'.
 
 *** Create output
-  lcl_output=>output( lo_excel ).
+  lcl_output=>output( cl_excel = lo_excel iv_writerclass_name = 'ZCL_EXCEL_WRITER_HUGE_FILE' ).
 
 
 
