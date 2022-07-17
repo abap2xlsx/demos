@@ -139,6 +139,7 @@ FORM setup_listboxes .
 * Possible READER-Classes
 *--------------------------------------------------------------------*
   lv_id = 'LB_READ'.
+  CLEAR lt_values.
   APPEND INITIAL LINE TO lt_values ASSIGNING <ls_value>.
   <ls_value>-key  = 'Autodetect'(001).
   <ls_value>-text = 'Autodetect'(001).
@@ -146,7 +147,6 @@ FORM setup_listboxes .
 
   PERFORM get_implementing_classds USING    'ZIF_EXCEL_READER'
                                    CHANGING lt_implementing_classes.
-  CLEAR lt_values.
   LOOP AT lt_implementing_classes ASSIGNING <ls_implementing_class>.
 
     APPEND INITIAL LINE TO lt_values ASSIGNING <ls_value>.
@@ -167,6 +167,7 @@ FORM setup_listboxes .
 * Possible WRITER-Classes
 *--------------------------------------------------------------------*
   lv_id = 'LB_WRITE'.
+  CLEAR lt_values.
   APPEND INITIAL LINE TO lt_values ASSIGNING <ls_value>.
   <ls_value>-key  = 'Autodetect'(001).
   <ls_value>-text = 'Autodetect'(001).
@@ -174,7 +175,6 @@ FORM setup_listboxes .
 
   PERFORM get_implementing_classds USING    'ZIF_EXCEL_WRITER'
                                    CHANGING lt_implementing_classes.
-  CLEAR lt_values.
   LOOP AT lt_implementing_classes ASSIGNING <ls_implementing_class>.
 
     APPEND INITIAL LINE TO lt_values ASSIGNING <ls_value>.
