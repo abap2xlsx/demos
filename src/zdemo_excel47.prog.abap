@@ -135,7 +135,7 @@ CLASS lcl_app IMPLEMENTATION.
         WHEN 'COLUMN_FORMULA_7'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is NOT shared.
           " The formula seen in Excel: =FILTER(Tbl2_Sheet1[Company Name],Tbl2_Sheet1[Airline ID]=[@Airline],"")
-          <ls_field_catalog>-column_name     = 'C7. Column formula array function/same sheet'.
+          <ls_field_catalog>-column_name     = 'C7. Column formula array fu./same sheet'.
           <ls_field_catalog>-column_formula  = '_xlfn.FILTER(Tbl2_Sheet1[Company Name],Tbl2_Sheet1[Company ID]=TblSheet1[[#This Row],[Company ID]],"")'.
       ENDCASE.
     ENDLOOP.
@@ -151,6 +151,9 @@ CLASS lcl_app IMPLEMENTATION.
         it_field_catalog  = lt_field_catalog
         is_table_settings = ls_table_settings
         iv_default_descr  = 'L' ).
+
+    " Late change of column title is possible
+    lo_worksheet->set_cell( ip_columnrow = 'M1' ip_value = 'C7. Column formula array function/same sheet' ).
 
     " Named range for formula 4
     lo_range = lo_excel->add_new_range( ).
