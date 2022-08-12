@@ -101,7 +101,7 @@ CLASS lcl_app IMPLEMENTATION.
           <ls_field_catalog>-totals_function = zcl_excel_table=>totals_function_sum.
         WHEN 'FORMULA_2'.
           " each cell may have a distinct formula, a formula is applied to future new rows
-          <ls_field_catalog>-scrtext_l       = 'Formula except 1 cell & aggregate fu.'.
+          <ls_field_catalog>-column_name     = 'Formula except 1 cell and aggregate function'.
           <ls_field_catalog>-formula         = abap_true.
           <ls_field_catalog>-column_formula  = lv_f1. " to apply to future rows
           <ls_field_catalog>-totals_function = zcl_excel_table=>totals_function_min.
@@ -116,12 +116,12 @@ CLASS lcl_app IMPLEMENTATION.
           <ls_field_catalog>-column_formula  = 'D2+100'.
         WHEN 'COLUMN_FORMULA_3'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is shared.
-          <ls_field_catalog>-scrtext_l       = 'C3. Column formula & aggregate function'.
+          <ls_field_catalog>-column_name     = 'C3. Column formula and aggregate function'.
           <ls_field_catalog>-column_formula  = 'D2+100'.
           <ls_field_catalog>-totals_function = zcl_excel_table=>totals_function_max.
         WHEN 'COLUMN_FORMULA_4'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is shared.
-          <ls_field_catalog>-scrtext_l       = 'C4. Column formula array fu./named range'.
+          <ls_field_catalog>-column_name     = 'C4. Column formula array function/named range'.
           <ls_field_catalog>-column_formula  = 'A1&";"&_xlfn.IFS(TRUE,NamedRange)'. " =A1&";"&@IFS(TRUE,NamedRange)
         WHEN 'COLUMN_FORMULA_5'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is NOT shared because it refers to a different sheet.
@@ -130,12 +130,12 @@ CLASS lcl_app IMPLEMENTATION.
         WHEN 'COLUMN_FORMULA_6'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is NOT shared.
           " The formula seen in Excel: =FILTER(TblSheet2[Company Name],TblSheet2[Airline ID]=[@Airline],"")
-          <ls_field_catalog>-scrtext_l       = 'C6. Column formula array fu./other sheet'.
+          <ls_field_catalog>-column_name     = 'C6. Column formula array function/other sheet'.
           <ls_field_catalog>-column_formula  = '_xlfn.FILTER(TblSheet2[Company Name],TblSheet2[Company ID]=TblSheet1[[#This Row],[Company ID]],"")'.
         WHEN 'COLUMN_FORMULA_7'.
           " The column formula applies to all rows and to future new rows. Internally, the formula is NOT shared.
           " The formula seen in Excel: =FILTER(Tbl2_Sheet1[Company Name],Tbl2_Sheet1[Airline ID]=[@Airline],"")
-          <ls_field_catalog>-scrtext_l       = 'C7. Column formula array fu./same sheet'.
+          <ls_field_catalog>-column_name     = 'C7. Column formula array fu./same sheet'.
           <ls_field_catalog>-column_formula  = '_xlfn.FILTER(Tbl2_Sheet1[Company Name],Tbl2_Sheet1[Company ID]=TblSheet1[[#This Row],[Company ID]],"")'.
       ENDCASE.
     ENDLOOP.
@@ -151,6 +151,9 @@ CLASS lcl_app IMPLEMENTATION.
         it_field_catalog  = lt_field_catalog
         is_table_settings = ls_table_settings
         iv_default_descr  = 'L' ).
+
+    " Late change of column title is possible
+    lo_worksheet->set_cell( ip_columnrow = 'M1' ip_value = 'C7. Column formula array function/same sheet' ).
 
     " Named range for formula 4
     lo_range = lo_excel->add_new_range( ).
