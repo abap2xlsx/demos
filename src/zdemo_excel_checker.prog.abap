@@ -116,7 +116,7 @@ CLASS lcl_xlsx_diff_item DEFINITION
               diff_state  TYPE ty_diff_state,
               folder_diff TYPE REF TO lcl_xlsx_diff_item,
             END OF ty_diff_item,
-            ty_diff_items TYPE STANDARD TABLE OF ty_diff_item WITH EMPTY KEY,
+            ty_diff_items TYPE STANDARD TABLE OF ty_diff_item WITH DEFAULT KEY,
             BEGIN OF ty_item,
               local_name TYPE string,
               full_path  TYPE cl_abap_zip=>t_file-name,
@@ -412,8 +412,6 @@ CLASS lcl_app DEFINITION.
           lv_filesep         TYPE c LENGTH 1.
 
 ENDCLASS.
-
-
 
 
 CLASS lcx_zip_diff IMPLEMENTATION.
@@ -1122,7 +1120,7 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
           item_table          TYPE treemcitab,
           item_line           TYPE treemcitem,
           temp_container      TYPE REF TO cl_gui_container.
-
+    CONSTANTS: cntb_btype_button TYPE i VALUE 0.
 
     IF go_tree IS NOT BOUND.
       ls_hierarchy_header-heading = 'ZIP Hierarchy'(001).
@@ -1392,7 +1390,11 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
       save_node_key = node_key.
       temp_node_key = |{ node_key }|.
 
-      isfolder = xsdbool( diff_item->folder_diff IS BOUND ).
+      IF diff_item->folder_diff IS BOUND.
+        isfolder = abap_true.
+      ELSE.
+        isfolder = abap_false.
+      ENDIF.
       go_tree->add_node(
             node_key          = temp_node_key
             relationship      = cl_column_tree_model=>relat_first_child
