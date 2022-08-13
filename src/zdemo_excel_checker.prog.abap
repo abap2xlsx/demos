@@ -102,17 +102,7 @@ CLASS lcl_xlsx_diff_item DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES : BEGIN OF ENUM enum_diff_state STRUCTURE state,
-              same,
-              only_content_changed,
-              only_attribute_changed,
-              changed,
-              added,
-              deleted,
-              undefined,
-              folder_undefined,
-            END OF ENUM enum_diff_state STRUCTURE state,
-            ty_diff_state TYPE enum_diff_state,
+    TYPES : ty_diff_state TYPE i,
             BEGIN OF ty_diff_item_attr,
               date TYPE cl_abap_zip=>t_file-date,
               time TYPE cl_abap_zip=>t_file-time,
@@ -135,6 +125,16 @@ CLASS lcl_xlsx_diff_item DEFINITION
               size       TYPE cl_abap_zip=>t_file-size,
             END OF ty_item,
             ty_items TYPE SORTED TABLE OF ty_item WITH UNIQUE KEY local_name.
+    CONSTANTS: BEGIN OF state,
+                 same                   TYPE ty_diff_state VALUE 1,
+                 only_content_changed   TYPE ty_diff_state VALUE 2,
+                 only_attribute_changed TYPE ty_diff_state VALUE 3,
+                 changed                TYPE ty_diff_state VALUE 4,
+                 added                  TYPE ty_diff_state VALUE 5,
+                 deleted                TYPE ty_diff_state VALUE 6,
+                 undefined              TYPE ty_diff_state VALUE 7,
+                 folder_undefined       TYPE ty_diff_state VALUE 8,
+               END OF state.
 
     CLASS-METHODS get_diff
       IMPORTING
@@ -417,7 +417,7 @@ ENDCLASS.
 
 
 CLASS lcx_zip_diff IMPLEMENTATION.
-  METHOD constructor ##ADT_SUPPRESS_GENERATION.
+  METHOD constructor.
     super->constructor( textid = textid previous = previous ).
     me->text = text.
   ENDMETHOD.
@@ -839,7 +839,7 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
           zip_2_index   TYPE i,
           zip_1_read    TYPE abap_bool,
           zip_2_read    TYPE abap_bool,
-          diff_state    TYPE lcl_xlsx_diff_item=>enum_diff_state,
+          diff_state    TYPE lcl_xlsx_diff_item=>ty_diff_state,
           temp_string_1 TYPE string,
           temp_string_2 TYPE string,
           item          TYPE REF TO lcl_xlsx_diff_item=>ty_item.
@@ -893,7 +893,8 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
           " same item -> compare the contents of the 2 items
           zip_1_read = abap_true.
           zip_2_read = abap_true.
-          IF contains( val = item_1->local_name end = '/' ).
+          IF item_1->local_name CP '*/'.
+*          IF contains( val = item_1->local_name end = '/' ).
             " folder
             temp_string_1 = |{ path }{ item_1->local_name }|.
             folder_diff = compare_items_at_path( path = temp_string_1 ).
@@ -914,7 +915,8 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
       ELSEIF zip_1_index <= lines( zip_1_items ).
         diff_state = state-deleted.
         zip_1_read = abap_true.
-        IF contains( val = item_1->local_name end = '/' ).
+        IF item_1->local_name CP '*/'.
+*        IF contains( val = item_1->local_name end = '/' ).
           " folder
           temp_string_1 = |{ path }{ item_1->local_name }|.
           folder_diff = compare_items_at_path( path = temp_string_1 ).
@@ -922,7 +924,8 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
       ELSEIF zip_2_index <= lines( zip_2_items ).
         diff_state = state-added.
         zip_2_read = abap_true.
-        IF contains( val = item_2->local_name end = '/' ).
+        IF item_2->local_name CP '*/'.
+*        IF contains( val = item_2->local_name end = '/' ).
           " folder
           temp_string_2 = |{ path }{ item_2->local_name }|.
           folder_diff = compare_items_at_path( path = temp_string_2 ).
@@ -1039,7 +1042,8 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
     LOOP AT items ASSIGNING <item>.
       IF path = ``.
         local_name = substring_to( val = <item>-name regex = item_or_folder ).
-      ELSEIF contains( val = <item>-name start = path ).
+      ELSEIF strlen( <item>-name ) >= strlen( path ) AND substring( val = <item>-name len = strlen( path ) ) = path.
+*      ELSEIF contains( val = <item>-name start = path ).
         local_name = substring_to( val = substring( val = <item>-name off = strlen( path ) ) regex = item_or_folder ).
       ENDIF.
 *      local_name = COND #( WHEN path = `` THEN substring_to( val = <item>-name regex = item_or_folder )
@@ -1049,7 +1053,8 @@ CLASS lcl_xlsx_diff_item IMPLEMENTATION.
         IF sy-subrc <> 0.
 *        IF NOT line_exists( path_items[ local_name = local_name ] ).
           CLEAR path_item.
-          IF NOT contains( val = local_name end = '/' ).
+          IF local_name NP '*/'.
+*          IF NOT contains( val = local_name end = '/' ).
             path_item-local_name = local_name.
             path_item-full_path  = <item>-name.
             path_item-date       = <item>-date.
@@ -1116,7 +1121,7 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
           isfolder            TYPE as4flag,
           item_table          TYPE treemcitab,
           item_line           TYPE treemcitem,
-          temp_container TYPE REF TO cl_gui_container.
+          temp_container      TYPE REF TO cl_gui_container.
 
 
     IF go_tree IS NOT BOUND.
@@ -1271,13 +1276,14 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
 
     FIELD-SYMBOLS:
           <sub_files> TYPE lcl_xlsx_diff_item=>ty_diff_items.
-    DATA: lt_column     TYPE treemcitab,
-          diff_item     TYPE REF TO lcl_xlsx_diff_item=>ty_diff_item,
-          save_node_key TYPE i,
-          item_line     TYPE treemcitem,
-          temp_node_key TYPE string,
-          temp_string   TYPE string,
-          temp_save_node_key TYPE string.
+    DATA: lt_column          TYPE treemcitab,
+          diff_item          TYPE REF TO lcl_xlsx_diff_item=>ty_diff_item,
+          save_node_key      TYPE i,
+          item_line          TYPE treemcitem,
+          temp_node_key      TYPE string,
+          temp_string        TYPE string,
+          temp_save_node_key TYPE string,
+          isfolder           TYPE as4flag.
 
     LOOP AT diff_object->items REFERENCE INTO diff_item.
 
@@ -1386,11 +1392,12 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
       save_node_key = node_key.
       temp_node_key = |{ node_key }|.
 
+      isfolder = xsdbool( diff_item->folder_diff IS BOUND ).
       go_tree->add_node(
             node_key          = temp_node_key
             relationship      = cl_column_tree_model=>relat_first_child
             relative_node_key = parent_node_key
-            isfolder          = xsdbool( diff_item->folder_diff IS BOUND )
+            isfolder          = isfolder
             item_table        = lt_column
             user_object       = diff_object ).
 
@@ -1657,7 +1664,7 @@ CLASS lcl_xlsx_diff_file_ext IMPLEMENTATION.
     ENDIF.
 
     SPLIT name AT '/' INTO TABLE parts.
-    new_parts = VALUE string_table( ).
+    CLEAR new_parts.
     LOOP AT parts REFERENCE INTO part.
       INSERT part->* INTO new_parts INDEX 1.
     ENDLOOP.
@@ -2177,7 +2184,7 @@ CLASS lcl_app IMPLEMENTATION.
                     zip_new   = zip_new ).
 
               CATCH cx_root INTO error.
-                RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |Viewer error (https://github.com/sandraros/zip-diff): { error->get_text( ) }|.
+                RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |Viewer error: { error->get_text( ) }|.
             ENDTRY.
 
           WHEN 'WRITE_SMW0'.

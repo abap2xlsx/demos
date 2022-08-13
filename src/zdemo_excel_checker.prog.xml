@@ -22,6 +22,12 @@
      <ENTRY>abap2xlsx demos: check for regressions</ENTRY>
      <LENGTH>38</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_PATH</KEY>
+     <ENTRY>Folder to contain demo files</ENTRY>
+     <LENGTH>36</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
