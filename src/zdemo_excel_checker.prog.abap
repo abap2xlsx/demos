@@ -1120,7 +1120,6 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
           item_table          TYPE treemcitab,
           item_line           TYPE treemcitem,
           temp_container      TYPE REF TO cl_gui_container.
-    CONSTANTS: cntb_btype_button TYPE i VALUE 0.
 
     IF go_tree IS NOT BOUND.
       ls_hierarchy_header-heading = 'ZIP Hierarchy'(001).
