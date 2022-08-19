@@ -20,7 +20,9 @@
   "syntax": {
     "version": "v702",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": [],
+    "globalConstants": [
+      "cntb_btype_button"
+    ],
     "globalMacros": []
   },
   "rules": {
