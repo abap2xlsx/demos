@@ -5,6 +5,28 @@
 *&---------------------------------------------------------------------*
 REPORT zdemo_excel_checker.
 
+
+CLASS lcl_xlsx_diff_file_ext DEFINITION DEFERRED.
+
+
+CLASS lcx_zip_diff DEFINITION
+  INHERITING FROM cx_static_check
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    METHODS constructor
+      IMPORTING
+        text     TYPE clike
+        previous TYPE REF TO cx_root OPTIONAL.
+    METHODS get_text REDEFINITION.
+    METHODS get_longtext REDEFINITION.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    DATA text TYPE string.
+ENDCLASS.
+
+
 CLASS lcl_zip_cleanup_for_diff DEFINITION
   CREATE PUBLIC .
 
@@ -70,6 +92,194 @@ CLASS lcl_xlsx_cleanup_for_diff DEFINITION
         VALUE(result) TYPE xstring
       RAISING
         zcx_excel.
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_item DEFINITION
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    TYPES : ty_diff_state TYPE i,
+            BEGIN OF ty_diff_item_attr,
+              date TYPE cl_abap_zip=>t_file-date,
+              time TYPE cl_abap_zip=>t_file-time,
+              size TYPE cl_abap_zip=>t_file-size,
+            END OF ty_diff_item_attr,
+            BEGIN OF ty_diff_item,
+              local_name  TYPE string,
+              full_path   TYPE cl_abap_zip=>t_file-name,
+              attr_1      TYPE ty_diff_item_attr,
+              attr_2      TYPE ty_diff_item_attr,
+              diff_state  TYPE ty_diff_state,
+              folder_diff TYPE REF TO lcl_xlsx_diff_item,
+            END OF ty_diff_item,
+            ty_diff_items TYPE STANDARD TABLE OF ty_diff_item WITH DEFAULT KEY,
+            BEGIN OF ty_item,
+              local_name TYPE string,
+              full_path  TYPE cl_abap_zip=>t_file-name,
+              date       TYPE cl_abap_zip=>t_file-date,
+              time       TYPE cl_abap_zip=>t_file-time,
+              size       TYPE cl_abap_zip=>t_file-size,
+            END OF ty_item,
+            ty_items TYPE SORTED TABLE OF ty_item WITH UNIQUE KEY local_name.
+    CONSTANTS: BEGIN OF state,
+                 same                   TYPE ty_diff_state VALUE 1,
+                 only_content_changed   TYPE ty_diff_state VALUE 2,
+                 only_attribute_changed TYPE ty_diff_state VALUE 3,
+                 changed                TYPE ty_diff_state VALUE 4,
+                 added                  TYPE ty_diff_state VALUE 5,
+                 deleted                TYPE ty_diff_state VALUE 6,
+                 undefined              TYPE ty_diff_state VALUE 7,
+                 folder_undefined       TYPE ty_diff_state VALUE 8,
+               END OF state.
+
+    CLASS-METHODS get_diff
+      IMPORTING
+        zip_1         TYPE REF TO cl_abap_zip
+        zip_2         TYPE REF TO cl_abap_zip
+      RETURNING
+        VALUE(result) TYPE REF TO lcl_xlsx_diff_item.
+
+    DATA: path         TYPE string READ-ONLY,
+          items        TYPE ty_diff_items READ-ONLY,
+          is_different TYPE abap_bool READ-ONLY.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+
+    METHODS compare_items_at_path
+      IMPORTING
+        path          TYPE string OPTIONAL
+      RETURNING
+        VALUE(result) TYPE REF TO lcl_xlsx_diff_item.
+
+    METHODS get_items_at_path
+      IMPORTING
+        items             TYPE cl_abap_zip=>t_files
+        path              TYPE string OPTIONAL
+      RETURNING
+        VALUE(path_items) TYPE ty_items.
+
+    METHODS compare_two_items
+      IMPORTING
+        zip_1         TYPE REF TO cl_abap_zip
+        zip_2         TYPE REF TO cl_abap_zip
+        name_1        TYPE string
+        name_2        TYPE string
+      RETURNING
+        VALUE(result) TYPE ty_diff_item-diff_state.
+
+    DATA: zip_1 TYPE REF TO cl_abap_zip,
+          zip_2 TYPE REF TO cl_abap_zip.
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_viewer DEFINITION
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    METHODS constructor
+      IMPORTING
+        io_container TYPE REF TO cl_gui_container.
+
+    METHODS diff_and_view
+      IMPORTING
+        title_old TYPE csequence OPTIONAL
+        title_new TYPE csequence OPTIONAL
+        zip_old   TYPE REF TO cl_abap_zip
+        zip_new   TYPE REF TO cl_abap_zip.
+
+    EVENTS selection_changed
+      EXPORTING
+        VALUE(node) TYPE lcl_xlsx_diff_item=>ty_diff_item
+        VALUE(zip_old) TYPE REF TO cl_abap_zip
+        VALUE(zip_new) TYPE REF TO cl_abap_zip.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+
+    CONSTANTS: state    LIKE lcl_xlsx_diff_item=>state VALUE lcl_xlsx_diff_item=>state,
+               icon_old TYPE tv_image VALUE icon_create,
+               icon_new TYPE tv_image VALUE icon_msg.
+
+    METHODS add_tree_nodes
+      IMPORTING
+        parent_node_key TYPE tm_nodekey
+        path            TYPE string
+        diff_object     TYPE REF TO lcl_xlsx_diff_item.
+
+    METHODS view
+      IMPORTING
+        i_zip_diff TYPE REF TO lcl_xlsx_diff_item.
+
+    METHODS on_selection_changed
+                FOR EVENT selection_changed OF cl_tree_model
+      IMPORTING node_key.
+
+    DATA: container   TYPE REF TO cl_gui_container,
+          go_splitter TYPE REF TO cl_gui_splitter_container,
+          go_toolbar  TYPE REF TO cl_gui_toolbar,
+          go_tree     TYPE REF TO cl_column_tree_model,
+          node_key    TYPE i,
+          title_old   TYPE text40,
+          title_new   TYPE text40,
+          zip_old     TYPE REF TO cl_abap_zip,
+          zip_new     TYPE REF TO cl_abap_zip,
+          diff_file   TYPE REF TO lcl_xlsx_diff_file_ext.
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_file_ext DEFINITION
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    CLASS-METHODS class_constructor.
+
+    METHODS gui_download
+      IMPORTING
+        i_content   TYPE xstring
+        i_file_path TYPE string.
+
+    METHODS xml_pretty_print
+      CHANGING
+        c_content TYPE xstring.
+
+    METHODS on_selection_changed
+                FOR EVENT selection_changed OF lcl_xlsx_diff_viewer
+      IMPORTING node zip_old zip_new.
+
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+
+    CLASS-DATA: temp_dir TYPE string.
+
+    METHODS zip_get_and_gui_download
+      IMPORTING
+        zip           TYPE REF TO cl_abap_zip
+        name          TYPE string
+        prefix        TYPE string
+      RETURNING
+        VALUE(result) TYPE string
+      RAISING
+        lcx_zip_diff.
+
+    METHODS gui_execute
+      IMPORTING
+        i_parameter TYPE string
+      RAISING
+        lcx_zip_diff.
+
+    CONSTANTS: state LIKE lcl_xlsx_diff_item=>state VALUE lcl_xlsx_diff_item=>state.
 
 ENDCLASS.
 
@@ -196,13 +406,26 @@ CLASS lcl_app DEFINITION.
           splitter           TYPE REF TO cl_gui_splitter_container,
           alv_container      TYPE REF TO cl_gui_container,
           zip_diff_container TYPE REF TO cl_gui_container,
-          viewer             TYPE REF TO object,
+          viewer             TYPE REF TO lcl_xlsx_diff_viewer,
           salv               TYPE REF TO cl_salv_table,
           alv_table          TYPE ty_alv_table,
           lv_filesep         TYPE c LENGTH 1.
 
 ENDCLASS.
 
+
+CLASS lcx_zip_diff IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( textid = textid previous = previous ).
+    me->text = text.
+  ENDMETHOD.
+  METHOD get_text.
+    result = text.
+  ENDMETHOD.
+  METHOD get_longtext.
+    result = get_text( ).
+  ENDMETHOD.
+ENDCLASS.
 
 
 CLASS lcl_zip_cleanup_for_diff IMPLEMENTATION.
@@ -595,6 +818,867 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_item IMPLEMENTATION.
+
+
+  METHOD compare_items_at_path.
+
+    DATA: diff_item     TYPE ty_diff_item,
+          folder_diff   TYPE REF TO lcl_xlsx_diff_item,
+          item_1        TYPE REF TO lcl_xlsx_diff_item=>ty_item,
+          item_2        TYPE REF TO lcl_xlsx_diff_item=>ty_item,
+          zip_1_items   TYPE lcl_xlsx_diff_item=>ty_items,
+          zip_2_items   TYPE lcl_xlsx_diff_item=>ty_items,
+          zip_1_index   TYPE i,
+          zip_2_index   TYPE i,
+          zip_1_read    TYPE abap_bool,
+          zip_2_read    TYPE abap_bool,
+          diff_state    TYPE lcl_xlsx_diff_item=>ty_diff_state,
+          temp_string_1 TYPE string,
+          temp_string_2 TYPE string,
+          item          TYPE REF TO lcl_xlsx_diff_item=>ty_item.
+
+    CREATE OBJECT result TYPE lcl_xlsx_diff_item.
+    result->path = path.
+
+    zip_1_items = get_items_at_path( items = zip_1->files path = path ).
+    zip_2_items = get_items_at_path( items = zip_2->files path = path ).
+
+    zip_1_index = 0.
+    zip_2_index = 0.
+    zip_1_read = abap_true.
+    zip_2_read = abap_true.
+
+    WHILE zip_1_read = abap_true OR zip_2_read = abap_true.
+
+      IF zip_1_read = abap_true.
+        zip_1_index = zip_1_index + 1.
+        CLEAR item_1.
+        IF zip_1_index > lines( zip_1_items ).
+          zip_1_read = abap_false.
+        ELSE.
+*          item_1 = REF #( zip_1_items[ zip_1_index ] OPTIONAL ).
+          READ TABLE zip_1_items INDEX zip_1_index REFERENCE INTO item_1.
+        ENDIF.
+      ENDIF.
+      IF zip_2_read = abap_true.
+        zip_2_index = zip_2_index + 1.
+        CLEAR item_2.
+        IF zip_2_index > lines( zip_2_items ).
+          zip_2_read = abap_false.
+        ELSE.
+*          item_2 = REF #( zip_2_items[ zip_2_index ] OPTIONAL ).
+          READ TABLE zip_2_items INDEX zip_2_index REFERENCE INTO item_2.
+        ENDIF.
+      ENDIF.
+
+      CLEAR folder_diff.
+      diff_state = state-undefined.
+      zip_1_read = abap_false.
+      zip_2_read = abap_false.
+      IF zip_1_index <= lines( zip_1_items ) AND zip_2_index <= lines( zip_2_items ).
+        IF item_1->local_name < item_2->local_name.
+          diff_state = state-deleted.
+          zip_1_read = abap_true.
+        ELSEIF item_1->local_name > item_2->local_name.
+          diff_state = state-added.
+          zip_2_read = abap_true.
+        ELSE.
+          " same item -> compare the contents of the 2 items
+          zip_1_read = abap_true.
+          zip_2_read = abap_true.
+          IF item_1->local_name CP '*/'.
+*          IF contains( val = item_1->local_name end = '/' ).
+            " folder
+            temp_string_1 = |{ path }{ item_1->local_name }|.
+            folder_diff = compare_items_at_path( path = temp_string_1 ).
+            LOOP AT folder_diff->items TRANSPORTING NO FIELDS WHERE diff_state <> state-same.
+              EXIT.
+            ENDLOOP.
+            IF sy-subrc = 0.
+              diff_state = state-changed.
+            ELSE.
+              diff_state = state-same.
+            ENDIF.
+          ELSE.
+            temp_string_1 = |{ path }{ item_1->local_name }|.
+            temp_string_2 = |{ path }{ item_2->local_name }|.
+            diff_state = compare_two_items( zip_1 = zip_1 zip_2 = zip_2 name_1 = temp_string_1 name_2 = temp_string_2 ).
+          ENDIF.
+        ENDIF.
+      ELSEIF zip_1_index <= lines( zip_1_items ).
+        diff_state = state-deleted.
+        zip_1_read = abap_true.
+        IF item_1->local_name CP '*/'.
+*        IF contains( val = item_1->local_name end = '/' ).
+          " folder
+          temp_string_1 = |{ path }{ item_1->local_name }|.
+          folder_diff = compare_items_at_path( path = temp_string_1 ).
+        ENDIF.
+      ELSEIF zip_2_index <= lines( zip_2_items ).
+        diff_state = state-added.
+        zip_2_read = abap_true.
+        IF item_2->local_name CP '*/'.
+*        IF contains( val = item_2->local_name end = '/' ).
+          " folder
+          temp_string_2 = |{ path }{ item_2->local_name }|.
+          folder_diff = compare_items_at_path( path = temp_string_2 ).
+        ENDIF.
+      ELSE.
+        " no more file to compare
+        EXIT.
+      ENDIF.
+
+      CLEAR diff_item.
+      IF diff_state = state-added.
+        item = item_2.
+      ELSE.
+        item = item_1.
+        diff_item-attr_1-date = item_1->date.
+        diff_item-attr_1-time = item_1->time.
+        diff_item-attr_1-size = item_1->size.
+      ENDIF.
+      IF diff_state <> state-deleted.
+        diff_item-attr_2-date = item_2->date.
+        diff_item-attr_2-time = item_2->time.
+        diff_item-attr_2-size = item_2->size.
+      ENDIF.
+      diff_item-local_name  = item->local_name.
+      diff_item-full_path   = path && item->local_name.
+      diff_item-diff_state  = diff_state.
+      diff_item-folder_diff = folder_diff.
+*      diff_item = VALUE #(
+*          LET item = SWITCH #( diff_state WHEN state-added THEN item_2 ELSE item_1 ) IN
+*          local_name  = item->local_name
+*          full_path   = path && item->local_name
+*          attr_1      = COND #( WHEN diff_state <> state-added THEN VALUE #(
+*                          date = item_1->date
+*                          time = item_1->time
+*                          size = item_1->size ) )
+*          attr_2      = COND #( WHEN diff_state <> state-deleted THEN VALUE #(
+*                          date = item_2->date
+*                          time = item_2->time
+*                          size = item_2->size ) )
+*          diff_state  = diff_state
+*          folder_diff = folder_diff ).
+      INSERT diff_item INTO TABLE result->items.
+
+    ENDWHILE.
+
+    LOOP AT result->items TRANSPORTING NO FIELDS WHERE diff_state <> state-same.
+      EXIT.
+    ENDLOOP.
+    result->is_different = boolc( sy-subrc = 0 ).
+
+  ENDMETHOD.
+
+
+  METHOD compare_two_items.
+    DATA: content_1 TYPE xstring,
+          content_2 TYPE xstring.
+
+    zip_1->get(
+      EXPORTING
+        name                    = name_1
+      IMPORTING
+        content                 = content_1
+      EXCEPTIONS
+        zip_index_error         = 1
+        zip_decompression_error = 2
+        OTHERS                  = 3 ).
+    IF sy-subrc <> 0.
+      " todo
+    ENDIF.
+    zip_2->get(
+      EXPORTING
+        name                    = name_2
+      IMPORTING
+        content                 = content_2
+      EXCEPTIONS
+        zip_index_error         = 1
+        zip_decompression_error = 2
+        OTHERS                  = 3 ).
+    IF sy-subrc <> 0.
+      " todo
+    ENDIF.
+
+    IF content_1 <> content_2.
+      result = state-only_content_changed.
+    ELSE.
+      result = state-same.
+    ENDIF.
+*    result = COND #( WHEN content_1 <> content_2 THEN state-only_content_changed ELSE state-same ).
+
+  ENDMETHOD.
+
+
+  METHOD get_diff.
+    DATA: engine TYPE REF TO lcl_xlsx_diff_item.
+
+    CREATE OBJECT engine TYPE lcl_xlsx_diff_item.
+    engine->zip_1 = zip_1.
+    engine->zip_2 = zip_2.
+    result = engine->compare_items_at_path( ).
+
+  ENDMETHOD.
+
+
+  METHOD get_items_at_path.
+
+    DATA: starter        TYPE string,
+          item_or_folder TYPE string VALUE '^[^/]*(?:/|$)',
+          local_name     TYPE string,
+          path_item      TYPE lcl_xlsx_diff_item=>ty_item.
+    FIELD-SYMBOLS: <item> TYPE cl_abap_zip=>t_file.
+
+    CLEAR path_items.
+
+    LOOP AT items ASSIGNING <item>.
+      IF path = ``.
+        local_name = substring_to( val = <item>-name regex = item_or_folder ).
+      ELSEIF strlen( <item>-name ) >= strlen( path ) AND substring( val = <item>-name len = strlen( path ) ) = path.
+*      ELSEIF contains( val = <item>-name start = path ).
+        local_name = substring_to( val = substring( val = <item>-name off = strlen( path ) ) regex = item_or_folder ).
+      ENDIF.
+*      local_name = COND #( WHEN path = `` THEN substring_to( val = <item>-name regex = item_or_folder )
+*                           WHEN contains( val = <item>-name start = path ) THEN substring_to( val = substring( val = <item>-name off = strlen( path ) ) regex = item_or_folder ) ).
+      IF local_name IS NOT INITIAL.
+        READ TABLE path_items WITH TABLE KEY local_name = local_name TRANSPORTING NO FIELDS.
+        IF sy-subrc <> 0.
+*        IF NOT line_exists( path_items[ local_name = local_name ] ).
+          CLEAR path_item.
+          IF local_name NP '*/'.
+*          IF NOT contains( val = local_name end = '/' ).
+            path_item-local_name = local_name.
+            path_item-full_path  = <item>-name.
+            path_item-date       = <item>-date.
+            path_item-time       = <item>-time.
+            path_item-size       = <item>-size.
+          ELSE.
+            path_item-local_name = local_name.
+            path_item-full_path  = path && local_name.
+          ENDIF.
+          INSERT path_item INTO TABLE path_items.
+*          INSERT COND ty_item(
+*                WHEN NOT contains( val = local_name end = '/' ) THEN VALUE #(
+*                  local_name = local_name
+*                  full_path  = <item>-name
+*                  date       = <item>-date
+*                  time       = <item>-time
+*                  size       = <item>-size )
+*                ELSE VALUE #(
+*                  local_name = local_name
+*                  full_path  = path && local_name ) )
+*              INTO TABLE path_items.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
+
+
+  METHOD constructor.
+
+    me->container = io_container.
+    CREATE OBJECT diff_file TYPE lcl_xlsx_diff_file_ext.
+    SET HANDLER diff_file->on_selection_changed FOR me.
+
+  ENDMETHOD.
+
+
+  METHOD diff_and_view.
+    DATA: zip_diff TYPE REF TO lcl_xlsx_diff_item.
+
+    me->title_old = title_old.
+    me->title_new = title_new.
+    me->zip_old = zip_old.
+    me->zip_new = zip_new.
+
+    zip_diff = lcl_xlsx_diff_item=>get_diff( zip_1 = zip_old zip_2 = zip_new ).
+
+    view( zip_diff ).
+
+  ENDMETHOD.
+
+
+  METHOD view.
+
+    DATA: ls_hierarchy_header TYPE treemhhdr,
+          event               TYPE cntl_simple_event,
+          events              TYPE cntl_simple_events,
+          isfolder            TYPE as4flag,
+          item_table          TYPE treemcitab,
+          item_line           TYPE treemcitem,
+          temp_container      TYPE REF TO cl_gui_container.
+
+    IF go_tree IS NOT BOUND.
+      ls_hierarchy_header-heading = 'ZIP Hierarchy'(001).
+
+      CREATE OBJECT go_splitter
+        EXPORTING
+          parent  = container
+          rows    = 2
+          columns = 1.
+      go_splitter->set_row_height( id = 1 height = 5 ).
+      go_splitter->set_row_sash( id = 1 type = go_splitter->type_sashvisible value = go_splitter->false ).
+
+      temp_container = go_splitter->get_container( row = 1 column = 1 ).
+      CREATE OBJECT go_toolbar
+        EXPORTING
+          parent       = temp_container
+          display_mode = cl_gui_toolbar=>m_mode_horizontal.
+      go_toolbar->add_button(
+                fcode       = 'TITLE_OLD'
+                icon        = icon_old
+                butn_type   = cntb_btype_button
+                text        = title_old ).
+      go_toolbar->add_button(
+                fcode       = 'TITLE_NEW'
+                icon        = icon_new
+                butn_type   = cntb_btype_button
+                text        = title_new ).
+
+      CREATE OBJECT go_tree
+        EXPORTING
+          node_selection_mode   = cl_gui_simple_tree=>node_sel_mode_single
+          hierarchy_column_name = 'C1'
+          hierarchy_header      = ls_hierarchy_header.
+
+      go_tree->add_column(
+            name         = 'DATE_1'
+            width        = 0
+            header_image = icon_old
+            header_text  = 'Date' ).
+
+      go_tree->add_column(
+            name         = 'DATE_2'
+            width        = 0
+            header_image = icon_new
+            header_text  = 'Date' ).
+
+      go_tree->add_column(
+            name         = 'TIME_1'
+            width        = 0
+            header_image = icon_old
+            header_text  = 'Time' ).
+
+      go_tree->add_column(
+            name         = 'TIME_2'
+            width        = 0
+            header_image = icon_new
+            header_text  = 'Time' ).
+
+      go_tree->add_column(
+            name         = 'SIZE_1'
+            width        = 0
+            header_image = icon_old
+            header_text  = 'Size' ).
+
+      go_tree->add_column(
+            name         = 'SIZE_2'
+            width        = 0
+            header_image = icon_new
+            header_text  = 'Size' ).
+
+      temp_container = go_splitter->get_container( row = 2 column = 1 ).
+      go_tree->create_tree_control( parent = temp_container ).
+
+      SET HANDLER on_selection_changed FOR go_tree.
+      CLEAR event.
+      event-eventid = cl_tree_model=>eventid_selection_changed.
+      INSERT event INTO TABLE events.
+      go_tree->set_registered_events(
+        EXPORTING
+          events                    = events
+        EXCEPTIONS
+          illegal_event_combination = 1
+          unknown_event             = 2
+          OTHERS                    = 3 ).
+      IF sy-subrc <> 0.
+*       MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+
+    ELSE.
+
+      go_tree->delete_all_nodes( ).
+
+    ENDIF.
+
+    IF lines( i_zip_diff->items ) >= 1.
+      isfolder = abap_true.
+    ELSE.
+      isfolder = abap_false.
+    ENDIF.
+    CLEAR item_table.
+    CLEAR item_line.
+    item_line-item_name = 'C1'.
+    item_line-class     = cl_column_tree_model=>item_class_text.
+    item_line-text      = 'Root'.
+    INSERT item_line INTO TABLE item_table.
+    go_tree->add_node(
+          node_key   = '1'
+          isfolder   = isfolder
+          item_table = item_table ).
+
+    node_key = 1.
+    add_tree_nodes(
+          diff_object     = i_zip_diff
+          path            = ''
+          parent_node_key = '1' ).
+
+    go_tree->expand_root_nodes(
+      EXCEPTIONS
+        illegal_level_count = 1
+        OTHERS              = 2 ).
+    IF sy-subrc <> 0.
+*     MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+    go_tree->adjust_column_width(
+      EXPORTING
+        all_columns               = abap_true
+        include_heading           = abap_true
+      EXCEPTIONS
+        control_not_existing      = 1
+        control_dead              = 2
+        cntl_system_error         = 3
+        failed                    = 4
+        start_column_not_found    = 5
+        end_column_not_found      = 6
+        start_column_in_hierarchy = 7
+        end_column_in_hierarchy   = 8
+        start_column_empty        = 9
+        OTHERS                    = 10 ).
+    IF sy-subrc <> 0.
+*       MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD add_tree_nodes.
+
+    FIELD-SYMBOLS:
+          <sub_files> TYPE lcl_xlsx_diff_item=>ty_diff_items.
+    DATA: lt_column          TYPE treemcitab,
+          diff_item          TYPE REF TO lcl_xlsx_diff_item=>ty_diff_item,
+          save_node_key      TYPE i,
+          item_line          TYPE treemcitem,
+          temp_node_key      TYPE string,
+          temp_string        TYPE string,
+          temp_save_node_key TYPE string,
+          isfolder           TYPE as4flag.
+
+    LOOP AT diff_object->items REFERENCE INTO diff_item.
+
+      CLEAR lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'C1'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      item_line-text      = diff_item->local_name.
+      CASE diff_item->diff_state.
+        WHEN state-deleted.
+          item_line-style = cl_tree_control_base=>style_emphasized_negative.
+        WHEN state-added.
+          item_line-style = cl_tree_control_base=>style_emphasized_positive.
+        WHEN state-changed
+            OR state-only_attribute_changed
+            OR state-only_content_changed.
+          IF diff_item->folder_diff IS NOT BOUND.
+            item_line-style = cl_tree_control_base=>style_emphasized.
+          ELSE.
+            item_line-style = cl_tree_control_base=>style_intensified.
+          ENDIF.
+        WHEN OTHERS.
+          item_line-style = cl_tree_control_base=>style_default.
+      ENDCASE.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'DATE_1'.
+      item_line-class = cl_column_tree_model=>item_class_text.
+      IF diff_item->attr_1-date IS NOT INITIAL.
+        item_line-text = |{ diff_item->attr_1-date DATE = USER }|.
+      ENDIF.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'DATE_2'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      IF diff_item->attr_2-date IS NOT INITIAL.
+        item_line-text = |{ diff_item->attr_2-date DATE = USER }|.
+      ENDIF.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'TIME_1'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      IF diff_item->attr_1-time IS NOT INITIAL.
+        item_line-text = |{ diff_item->attr_1-time TIME = USER }|.
+      ENDIF.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'TIME_2'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      IF diff_item->attr_2-time IS NOT INITIAL.
+        item_line-text = |{ diff_item->attr_2-time TIME = USER }|.
+      ENDIF.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'SIZE_1'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      item_line-text      = |{ diff_item->attr_1-size }|.
+      INSERT item_line INTO TABLE lt_column.
+
+      CLEAR item_line.
+      item_line-item_name = 'SIZE_2'.
+      item_line-class     = cl_column_tree_model=>item_class_text.
+      item_line-text      = |{ diff_item->attr_2-size }|.
+      INSERT item_line INTO TABLE lt_column.
+
+*      lt_column = VALUE #(
+*      ( item_name = 'C1'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = diff_item->local_name
+*        style     = SWITCH #( diff_item->diff_state
+*                      WHEN state-deleted THEN cl_tree_control_base=>style_emphasized_negative
+*                      WHEN state-added THEN cl_tree_control_base=>style_emphasized_positive
+*                      WHEN state-changed
+*                        OR state-only_attribute_changed
+*                        OR state-only_content_changed
+*                        THEN COND #( WHEN diff_item->folder_diff IS NOT BOUND
+*                                               THEN cl_tree_control_base=>style_emphasized
+*                                               ELSE cl_tree_control_base=>style_intensified )
+*                      ELSE cl_tree_control_base=>style_default ) )
+*      ( item_name = 'DATE_1'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = COND #( WHEN diff_item->attr_1-date IS NOT INITIAL THEN |{ diff_item->attr_1-date DATE = USER }| ) )
+*      ( item_name = 'DATE_2'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = COND #( WHEN diff_item->attr_2-date IS NOT INITIAL THEN |{ diff_item->attr_2-date DATE = USER }| ) )
+*      ( item_name = 'TIME_1'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = COND #( WHEN diff_item->attr_2-time IS NOT INITIAL THEN |{ diff_item->attr_1-time TIME = USER }| ) )
+*      ( item_name = 'TIME_2'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = COND #( WHEN diff_item->attr_2-time IS NOT INITIAL THEN |{ diff_item->attr_2-time TIME = USER }| ) )
+*      ( item_name = 'SIZE_1'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = |{ diff_item->attr_1-size }| )
+*      ( item_name = 'SIZE_2'
+*        class     = cl_column_tree_model=>item_class_text
+*        text      = |{ diff_item->attr_2-size }| ) ).
+
+      ADD 1 TO node_key.
+      save_node_key = node_key.
+      temp_node_key = |{ node_key }|.
+
+      IF diff_item->folder_diff IS BOUND.
+        isfolder = abap_true.
+      ELSE.
+        isfolder = abap_false.
+      ENDIF.
+      go_tree->add_node(
+            node_key          = temp_node_key
+            relationship      = cl_column_tree_model=>relat_first_child
+            relative_node_key = parent_node_key
+            isfolder          = isfolder
+            item_table        = lt_column
+            user_object       = diff_object ).
+
+      IF diff_item->folder_diff IS BOUND
+            AND lines( diff_item->folder_diff->items ) > 0.
+        temp_string = path && diff_item->local_name.
+        add_tree_nodes(
+            diff_object     = diff_item->folder_diff
+            path            = temp_string
+            parent_node_key = temp_node_key ).
+        IF diff_item->diff_state <> state-same.
+          temp_save_node_key = |{ save_node_key }|.
+          go_tree->expand_node(
+            EXPORTING
+              node_key       = temp_save_node_key
+            EXCEPTIONS
+              node_not_found = 1
+              OTHERS         = 2 ).
+          IF sy-subrc <> 0.
+*     MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD on_selection_changed.
+    DATA: item        TYPE treemcitem,
+          user_object TYPE REF TO object,
+          diff_item   TYPE REF TO lcl_xlsx_diff_item,
+          item_2      TYPE lcl_xlsx_diff_item=>ty_diff_item.
+
+    go_tree->node_get_item(
+      EXPORTING
+        node_key       = node_key
+        item_name      = 'C1'
+      IMPORTING
+        item           = item
+      EXCEPTIONS
+        node_not_found = 1
+        item_not_found = 2
+        OTHERS         = 3 ).
+    IF sy-subrc <> 0.
+*     MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+    go_tree->node_get_user_object(
+      EXPORTING
+        node_key       = node_key
+      IMPORTING
+        user_object    = user_object
+      EXCEPTIONS
+        node_not_found = 1
+        OTHERS         = 2
+    ).
+    IF sy-subrc <> 0.
+*     MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+    IF user_object IS BOUND.
+
+      diff_item ?= user_object.
+
+      READ TABLE diff_item->items WITH KEY local_name = item-text INTO item_2.
+      RAISE EVENT selection_changed
+          EXPORTING
+              node    = item_2
+*              node    = diff_item->items[ local_name = item-text ]
+              zip_old = zip_old
+              zip_new = zip_new.
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+ENDCLASS.
+
+
+CLASS lcl_xlsx_diff_file_ext IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+
+    CALL METHOD cl_gui_frontend_services=>get_temp_directory
+      CHANGING
+        temp_dir     = temp_dir
+      EXCEPTIONS
+        cntl_error   = 1
+        error_no_gui = 2.
+    IF sy-subrc <> 0.
+      " Error handling
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD on_selection_changed.
+    DATA: downloaded_file_new TYPE string,
+          downloaded_file_old TYPE string,
+          error               TYPE REF TO cx_root.
+
+    TRY.
+
+        CASE node-diff_state.
+          WHEN state-added.
+
+            downloaded_file_new = zip_get_and_gui_download( zip = zip_new name = node-full_path prefix = 'added' ).
+
+            gui_execute( |"{ downloaded_file_new }"| ).
+
+          WHEN state-changed
+            OR state-only_attribute_changed
+            OR state-only_content_changed.
+
+            downloaded_file_old = zip_get_and_gui_download( zip = zip_old name = node-full_path prefix = 'old' ).
+            downloaded_file_new = zip_get_and_gui_download( zip = zip_new name = node-full_path prefix = 'new' ).
+
+            gui_execute( |-d "{ downloaded_file_old }" "{ downloaded_file_new }"| ).
+
+          WHEN state-deleted.
+
+            downloaded_file_old = zip_get_and_gui_download( zip = zip_old name = node-full_path prefix = 'deleted' ).
+
+            gui_execute( |"{ downloaded_file_old }"| ).
+
+          WHEN state-same.
+
+            downloaded_file_old = zip_get_and_gui_download( zip = zip_old name = node-full_path prefix = 'same' ).
+
+            gui_execute( |"{ downloaded_file_old }"| ).
+
+        ENDCASE.
+
+      CATCH cx_root INTO error.
+        MESSAGE error TYPE 'I' DISPLAY LIKE 'E'.
+    ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD gui_download.
+    DATA: solix_tab TYPE solix_tab.
+
+    solix_tab = cl_bcs_convert=>xstring_to_solix( i_content ).
+
+    cl_gui_frontend_services=>gui_download(
+      EXPORTING
+        bin_filesize              = xstrlen( i_content )
+        filename                  = i_file_path
+        filetype                  = 'BIN'
+      CHANGING
+        data_tab                  = solix_tab
+      EXCEPTIONS
+        file_write_error          = 1
+        no_batch                  = 2
+        gui_refuse_filetransfer   = 3
+        invalid_type              = 4
+        no_authority              = 5
+        unknown_error             = 6
+        header_not_allowed        = 7
+        separator_not_allowed     = 8
+        filesize_not_allowed      = 9
+        header_too_long           = 10
+        dp_error_create           = 11
+        dp_error_send             = 12
+        dp_error_write            = 13
+        unknown_dp_error          = 14
+        access_denied             = 15
+        dp_out_of_memory          = 16
+        disk_full                 = 17
+        dp_timeout                = 18
+        file_not_found            = 19
+        dataprovider_exception    = 20
+        control_flush_error       = 21
+        not_supported_by_gui      = 22
+        error_no_gui              = 23
+        OTHERS                    = 24
+    ).
+    IF sy-subrc <> 0.
+*        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                   WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD xml_pretty_print.
+
+    DATA xml_document TYPE REF TO if_ixml_document.
+
+    CALL FUNCTION 'SDIXML_XML_TO_DOM'
+      EXPORTING
+        xml      = c_content
+      IMPORTING
+        document = xml_document
+      EXCEPTIONS
+        OTHERS   = 1.
+    CALL FUNCTION 'SDIXML_DOM_TO_XML'
+      EXPORTING
+        document      = xml_document
+        pretty_print  = abap_true
+      IMPORTING
+        xml_as_string = c_content
+      EXCEPTIONS
+        OTHERS        = 2.
+
+  ENDMETHOD.
+
+
+
+  METHOD gui_execute.
+    DATA: temp_string TYPE string.
+
+    cl_gui_frontend_services=>execute(
+        EXPORTING
+          application = 'code'
+          parameter   = i_parameter
+          minimized   = 'X'
+          synchronous = ''
+        EXCEPTIONS
+          cntl_error             = 1
+          error_no_gui           = 2
+          bad_parameter          = 3
+          file_not_found         = 4
+          path_not_found         = 5
+          file_extension_unknown = 6
+          error_execute_failed   = 7
+          synchronous_failed     = 8
+          not_supported_by_gui   = 9
+          OTHERS                 = 10 ).
+    IF sy-subrc <> 0.
+      temp_string = |cl_gui_frontend_services=>execute { sy-subrc } { i_parameter }|.
+      RAISE EXCEPTION TYPE lcx_zip_diff EXPORTING text = temp_string.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zip_get_and_gui_download.
+    DATA: content     TYPE xstring,
+          parts       TYPE string_table,
+          new_parts   TYPE string_table,
+          part        TYPE REF TO string,
+          temp_string TYPE string.
+
+    zip->get(
+        EXPORTING
+          name                    = name
+        IMPORTING
+          content                 = content
+        EXCEPTIONS
+          zip_index_error         = 1
+          zip_decompression_error = 2
+          OTHERS                  = 3 ).
+    IF sy-subrc <> 0.
+      temp_string = |zip->get { sy-subrc } { name }|.
+      RAISE EXCEPTION TYPE lcx_zip_diff EXPORTING text = temp_string.
+    ENDIF.
+
+    SPLIT name AT '/' INTO TABLE parts.
+    CLEAR new_parts.
+    LOOP AT parts REFERENCE INTO part.
+      INSERT part->* INTO new_parts INDEX 1.
+    ENDLOOP.
+
+    result = |{ temp_dir }\\{ prefix }_{ concat_lines_of( table = new_parts sep = '_' ) }.xml|.
+    IF name CS '.xml'.
+      xml_pretty_print( CHANGING c_content = content ).
+    ENDIF.
+
+    gui_download( i_content   = content
+                  i_file_path = result ).
+
+  ENDMETHOD.
 
 ENDCLASS.
 
@@ -1067,9 +2151,9 @@ CLASS lcl_app IMPLEMENTATION.
 
             TRY.
                 IF viewer IS NOT BOUND.
-                  CREATE OBJECT viewer TYPE ('ZCL_ZIP_DIFF_VIEWER2')
-                      EXPORTING
-                        io_container = zip_diff_container.
+                  CREATE OBJECT viewer TYPE lcl_xlsx_diff_viewer
+                    EXPORTING
+                      io_container = zip_diff_container.
                 ENDIF.
 
                 CREATE OBJECT zip_old.
@@ -1094,13 +2178,14 @@ CLASS lcl_app IMPLEMENTATION.
                   RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |zip load new { alv_line-filename }|.
                 ENDIF.
 
-                CALL METHOD viewer->('DIFF_AND_VIEW')
-                  EXPORTING
-                    zip_old = zip_old
-                    zip_new = zip_new.
+                viewer->diff_and_view(
+                    title_old = '"old" (Web Repository/expected)'
+                    zip_old   = zip_old
+                    title_new = '"new" (current execution)'
+                    zip_new   = zip_new ).
 
               CATCH cx_root INTO error.
-                RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |Viewer error (https://github.com/sandraros/zip-diff): { error->get_text( ) }|.
+                RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |Viewer error: { error->get_text( ) }|.
             ENDTRY.
 
           WHEN 'WRITE_SMW0'.
@@ -1259,8 +2344,8 @@ CLASS lcl_app IMPLEMENTATION.
     columns->get_column( 'FILENAME' )->set_output_length( 50 ).
     columns->get_column( 'XLSX_JUST_NOW' )->set_technical( ).
     columns->get_column( 'XLSX_REFERENCE' )->set_technical( ).
-columns->get_column( 'COMPARE_XLSX_JUST_NOW' )->set_technical( ).
-columns->get_column( 'COMPARE_XLSX_REFERENCE' )->set_technical( ).
+    columns->get_column( 'COMPARE_XLSX_JUST_NOW' )->set_technical( ).
+    columns->get_column( 'COMPARE_XLSX_REFERENCE' )->set_technical( ).
 
     events = salv->get_event( ).
     SET HANDLER on_link_clicked FOR events.
