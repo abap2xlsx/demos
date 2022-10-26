@@ -6,19 +6,13 @@
    <TEXT>04_Sheets.xlsx (ZDEMO_EXCEL4)</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL4</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.xlsx</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL4</OBJID>
      <NAME>filename</NAME>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL4</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</VALUE>
     </WWWPARAMS>

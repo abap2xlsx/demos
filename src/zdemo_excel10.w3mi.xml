@@ -6,20 +6,14 @@
    <TEXT>10_iTabFieldCatalog.xlsx (ZDEMO_EXCEL10)</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL10</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.xlsx</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL10</OBJID>
      <NAME>filename</NAME>
      <VALUE>10_iTabFieldCatalog.xlsx</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL10</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</VALUE>
     </WWWPARAMS>

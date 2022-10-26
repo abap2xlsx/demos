@@ -6,19 +6,13 @@
    <TEXT>Comments.xlsx (ZDEMO_EXCEL_COMMENTS)</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL_COMMENTS</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.xlsx</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL_COMMENTS</OBJID>
      <NAME>filename</NAME>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL_COMMENTS</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</VALUE>
     </WWWPARAMS>

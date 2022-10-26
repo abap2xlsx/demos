@@ -6,19 +6,13 @@
    <TEXT>02_Styles.xlsx (ZDEMO_EXCEL2)</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL2</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.xlsx</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL2</OBJID>
      <NAME>filename</NAME>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL2</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</VALUE>
     </WWWPARAMS>

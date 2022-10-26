@@ -6,20 +6,14 @@
    <TEXT>abap2xlsx resources/TestMacro.xlsm</TEXT>
    <PARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL29_INPUT</OBJID>
      <NAME>fileextension</NAME>
      <VALUE>.xlsm</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL29_INPUT</OBJID>
      <NAME>filename</NAME>
      <VALUE>TestMacro.xlsm</VALUE>
     </WWWPARAMS>
     <WWWPARAMS>
-     <RELID>MI</RELID>
-     <OBJID>ZDEMO_EXCEL29_INPUT</OBJID>
      <NAME>mimetype</NAME>
      <VALUE>application/vnd.ms-excel.sheet.macroEnabled</VALUE>
     </WWWPARAMS>
