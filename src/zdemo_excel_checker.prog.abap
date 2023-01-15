@@ -736,6 +736,7 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
 
     CLEAR: docprops_core-creator,
            docprops_core-description,
+           docprops_core-last_modified_by,
            docprops_core-created,
            docprops_core-modified.
 
@@ -792,6 +793,54 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
         ENDIF.
         lo_element->set_attribute_ns( name = 'name' value = '' ).
       ENDDO.
+
+      CLEAR content.
+      lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
+      lo_renderer = lo_ixml->create_renderer(
+                  document = lo_document
+                  ostream  = lo_ostream ).
+      lo_renderer->render( ).
+
+      ls_file-name = <file>-name.
+      ls_file-content = content.
+      APPEND ls_file TO lt_file.
+
+    ENDLOOP.
+
+    LOOP AT zip->files ASSIGNING <file>
+        WHERE name CP 'xl/comments*.xml'.
+
+      zip->get(
+        EXPORTING
+          name                    = <file>-name
+        IMPORTING
+          content                 = content
+        EXCEPTIONS
+          zip_index_error         = 1
+          zip_decompression_error = 2
+          OTHERS                  = 3 ).
+      IF sy-subrc <> 0.
+        RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |{ <file>-name } not found|.
+      ENDIF.
+
+      lo_ixml = cl_ixml=>create( ).
+      lo_streamfactory = lo_ixml->create_stream_factory( ).
+      lo_istream = lo_streamfactory->create_istream_xstring( content ).
+      lo_document = lo_ixml->create_document( ).
+      lo_parser = lo_ixml->create_parser(
+                  document       = lo_document
+                  istream        = lo_istream
+                  stream_factory = lo_streamfactory ).
+      lo_parser->parse( ).
+
+      lo_element = lo_document->find_from_path_ns(
+                  default_uri = ''
+                  path = '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:comments"'
+                      && '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:authors"'
+                      && '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:author"' ).
+      IF lo_element IS BOUND.
+        lo_element->set_value( '' ).
+      ENDIF.
 
       CLEAR content.
       lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
