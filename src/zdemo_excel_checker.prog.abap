@@ -833,11 +833,7 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
                   stream_factory = lo_streamfactory ).
       lo_parser->parse( ).
 
-      lo_element = lo_document->find_from_path_ns(
-                  default_uri = ''
-                  path = '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:comments"'
-                      && '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:authors"'
-                      && '/"http://schemas.openxmlformats.org/spreadsheetml/2006/main:author"' ).
+      lo_element = lo_document->find_from_path( path = `/comments/authors/author` ).
       IF lo_element IS BOUND.
         lo_element->set_value( '' ).
       ENDIF.
