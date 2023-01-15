@@ -8,7 +8,16 @@
 
 REPORT zdemo_excel33.
 
-TYPES: ty_t005t_lines TYPE TABLE OF t005t.
+TYPES: BEGIN OF ty_t005t_line,
+         mandt   TYPE mandt,
+         spras   TYPE spras,
+         land1   TYPE land1,
+         landx   TYPE landx,
+         natio   TYPE natio,
+         landx50 TYPE landx50,
+         natio50 TYPE natio50,
+       END OF ty_t005t_line,
+       ty_t005t_lines TYPE TABLE OF ty_t005t_line.
 
 DATA: lo_excel      TYPE REF TO zcl_excel,
       lo_worksheet  TYPE REF TO zcl_excel_worksheet,
