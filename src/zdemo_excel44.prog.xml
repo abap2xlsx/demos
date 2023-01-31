@@ -12,21 +12,9 @@
    </PROGDIR>
    <TPOOL>
     <item>
-     <ID>I</ID>
-     <KEY>B44</KEY>
-     <ENTRY>Testing empty file option</ENTRY>
-     <LENGTH>50</LENGTH>
-    </item>
-    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Demo excel 44</ENTRY>
      <LENGTH>29</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_MTYFIL</KEY>
-     <ENTRY>No data =&gt; No empty line</ENTRY>
-     <LENGTH>32</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

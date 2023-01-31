@@ -1693,18 +1693,6 @@
      <ENTRY>abap2xlsx Demo:</ENTRY>
      <LENGTH>15</LENGTH>
     </item>
-    <item>
-     <ID>S</ID>
-     <KEY>RBI_1</KEY>
-     <ENTRY>ZCL_EXCEL</ENTRY>
-     <LENGTH>17</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>RBI_2</KEY>
-     <ENTRY>ZCL_EXCEL_WORKSHEET</ENTRY>
-     <LENGTH>27</LENGTH>
-    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

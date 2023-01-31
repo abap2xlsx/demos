@@ -12,18 +12,6 @@
    </PROGDIR>
    <TPOOL>
     <item>
-     <ID>S</ID>
-     <KEY>P_PATH</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>RB_BACK</KEY>
-     <LENGTH>17</LENGTH>
-    </item>
-    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Hello World</ENTRY>
      <LENGTH>28</LENGTH>
