@@ -12,6 +12,12 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>001</KEY>
+     <ENTRY>There were errors. See internal T_ERRORS table.</ENTRY>
+     <LENGTH>94</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo Show</ENTRY>
      <LENGTH>19</LENGTH>

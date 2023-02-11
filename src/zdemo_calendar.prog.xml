@@ -12,57 +12,9 @@
    </PROGDIR>
    <TPOOL>
     <item>
-     <ID>I</ID>
-     <KEY>000</KEY>
-     <ENTRY>Orientation</ENTRY>
-     <LENGTH>21</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>001</KEY>
-     <ENTRY>CW</ENTRY>
-     <LENGTH>12</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>002</KEY>
-     <ENTRY>Created with https://github.com/abap2xlsx/abap2xlsx</ENTRY>
-     <LENGTH>132</LENGTH>
-    </item>
-    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Create Calendar with Pictures</ENTRY>
      <LENGTH>45</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_FROM</KEY>
-     <ENTRY>From</ENTRY>
-     <LENGTH>12</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_LANDS</KEY>
-     <ENTRY>Landscape</ENTRY>
-     <LENGTH>17</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_PATH</KEY>
-     <ENTRY>Path</ENTRY>
-     <LENGTH>12</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_PORTR</KEY>
-     <ENTRY>Portrait</ENTRY>
-     <LENGTH>16</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_TO</KEY>
-     <ENTRY>To</ENTRY>
-     <LENGTH>10</LENGTH>
     </item>
    </TPOOL>
    <I18N_TPOOL>

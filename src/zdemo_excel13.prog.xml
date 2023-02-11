@@ -16,13 +16,6 @@
      <ENTRY>abap2xlsx Demo: Merge cells</ENTRY>
      <LENGTH>28</LENGTH>
     </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_PATH</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
