@@ -16,19 +16,6 @@
      <ENTRY>abap2xlsx Demo: Set active sheet</ENTRY>
      <LENGTH>33</LENGTH>
     </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_NOOUT</KEY>
-     <ENTRY>Hide output</ENTRY>
-     <LENGTH>19</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_PATH</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>26</LENGTH>
-     <SPLIT>D</SPLIT>
-    </item>
    </TPOOL>
    <I18N_TPOOL>
     <item>
