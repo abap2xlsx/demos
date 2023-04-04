@@ -34,6 +34,7 @@ START-OF-SELECTION.
   lo_comment = lo_excel->add_new_comment( ).
   CONCATENATE 'A comment split' cl_abap_char_utilities=>cr_lf 'on 2 lines?' INTO lv_comment.
   lo_comment->set_text( ip_ref = 'F6' ip_text = lv_comment ).
+  lo_worksheet->add_comment( lo_comment ).
 
   " Second sheet
   lo_worksheet = lo_excel->add_new_worksheet( ).
