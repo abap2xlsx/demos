@@ -26,15 +26,11 @@ SELECTION-SCREEN END OF BLOCK cls.
 
 SELECTION-SCREEN BEGIN OF BLOCK bl_err WITH FRAME TITLE TEXT-err.
 PARAMETERS: cb_errl AS CHECKBOX DEFAULT 'X'.
-SELECTION-SCREEN BEGIN OF LINE.
 PARAMETERS: cb_dump AS CHECKBOX DEFAULT space.
-SELECTION-SCREEN COMMENT (60) cmt_dump FOR FIELD cb_dump.
-SELECTION-SCREEN END OF LINE.
 SELECTION-SCREEN END OF BLOCK bl_err.
 
 INITIALIZATION.
   PERFORM setup_listboxes.
-  cmt_dump = TEXT-dum.
   GET PARAMETER ID 'GR8' FIELD gv_memid_gr8.
   p_upfile = gv_memid_gr8.
 
@@ -270,6 +266,7 @@ ENDFORM.                    " READ_TEMPLATE
 *&      Form  WRITE_TEMPLATE
 *&---------------------------------------------------------------------*
 FORM write_template  RAISING zcx_excel.
+  DATA lv_extension TYPE string.
 
   CASE lb_write.
 
@@ -294,6 +291,17 @@ FORM write_template  RAISING zcx_excel.
       ENDCASE.
 
     WHEN OTHERS.
+* extension replace should be part of the output but for now:
+* https://github.com/abap2xlsx/abap2xlsx/issues/1103
+      CASE lb_write.
+        WHEN 'ZCL_EXCEL_WRITER_XLSM'.
+          lv_extension = 'xlsm'.
+        WHEN 'ZCL_EXCEL_WRITER_CSV'.
+          lv_extension = 'csv'.
+        WHEN OTHERS.
+          lv_extension = 'xlsx'.
+      ENDCASE.
+      REPLACE '&' IN gc_save_file_name WITH lv_extension.
       lcl_output=>output( cl_excel            = excel
                           iv_writerclass_name = lb_write ).
   ENDCASE.

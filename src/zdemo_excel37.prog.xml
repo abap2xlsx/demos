@@ -12,9 +12,51 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>DUM</KEY>
+     <ENTRY>Dump on error</ENTRY>
+     <LENGTH>23</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Read xlsx-file and output = using templates</ENTRY>
      <LENGTH>59</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>CB_DUMP</KEY>
+     <ENTRY>Dump on error</ENTRY>
+     <LENGTH>21</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>CB_ERRL</KEY>
+     <ENTRY>Write exception details</ENTRY>
+     <LENGTH>31</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>LB_READ</KEY>
+     <ENTRY>Reader classname</ENTRY>
+     <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>LB_WRITE</KEY>
+     <ENTRY>Writer classname</ENTRY>
+     <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_APPLSE</KEY>
+     <ENTRY>From application server</ENTRY>
+     <LENGTH>31</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_UPFILE</KEY>
+     <ENTRY>Filename</ENTRY>
+     <LENGTH>16</LENGTH>
     </item>
    </TPOOL>
    <I18N_TPOOL>
