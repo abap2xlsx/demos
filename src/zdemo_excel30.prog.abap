@@ -21,8 +21,7 @@ DATA: lv_value  TYPE string,
 CONSTANTS: lc_typekind_string TYPE abap_typekind VALUE cl_abap_typedescr=>typekind_string,
            lc_typekind_packed TYPE abap_typekind VALUE cl_abap_typedescr=>typekind_packed,
            lc_typekind_num    TYPE abap_typekind VALUE cl_abap_typedescr=>typekind_num,
-           lc_typekind_date   TYPE abap_typekind VALUE cl_abap_typedescr=>typekind_date,
-           lc_typekind_s_ls   TYPE string VALUE 's_leading_blanks'.
+           lc_typekind_date   TYPE abap_typekind VALUE cl_abap_typedescr=>typekind_date.
 
 CONSTANTS: gc_save_file_name TYPE string VALUE '30_CellDataTypes.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
@@ -43,7 +42,7 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 1 ip_value = 'String'
                           ip_abap_type = lc_typekind_string ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 2 ip_value = ' String with leading spaces'
-                          ip_data_type = lc_typekind_s_ls ).
+                          ip_abap_type = lc_typekind_string ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 3 ip_value = ' Negative Value'
                           ip_abap_type = lc_typekind_string ).
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 1 ip_value = 'Packed'
