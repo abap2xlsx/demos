@@ -66,7 +66,7 @@ START-OF-SELECTION.
       'Airline;Flight Number;Date;Airfare;Airline Currency;Plane Type;Max. capacity econ.;Occupied econ.;Total;Max. capacity bus.;Occupied bus.;Max. capacity 1st;Occupied 1st'.
   ENDIF.
 
-  lo_worksheet->freeze_panes( ip_num_columns = 1 ip_num_rows = 1 ). "freeze column headers when scrolling
+  lo_worksheet->freeze_panes( ip_num_columns = 1 ip_num_rows = 3 ). "freeze column headers when scrolling
   IF lines( lt_test ) >= 1.
     ls_error-cell_coords = |B2:B{ lines( lt_test ) + 1 }|.
     ls_error-number_stored_as_text = abap_true.
@@ -105,10 +105,8 @@ START-OF-SELECTION.
   lo_data_validation              = lo_worksheet->add_new_data_validation( ).
   lo_data_validation->type        = zcl_excel_data_validation=>c_type_list.
   lo_data_validation->formula1    = c_airlines.
-  lo_data_validation->cell_row    = 1.
-  lo_data_validation->cell_column = 'A'.
-  lo_data_validation->cell_row_to = 1048576.
-  lo_data_validation->cell_column_to = 'A'.
+  lo_data_validation->cell_row    = 4.
+  lo_data_validation->cell_column = 'C'.
 
 *** Create output
   lcl_output=>output( lo_excel ).
