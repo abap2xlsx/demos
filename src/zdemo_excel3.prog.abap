@@ -105,7 +105,7 @@ START-OF-SELECTION.
   lo_data_validation              = lo_worksheet->add_new_data_validation( ).
   lo_data_validation->type        = zcl_excel_data_validation=>c_type_list.
   lo_data_validation->formula1    = c_airlines.
-  lo_data_validation->cell_row    = 1.
+  lo_data_validation->cell_row    = 2.
   lo_data_validation->cell_column = 'A'.
   lo_data_validation->cell_row_to = 1048576.
   lo_data_validation->cell_column_to = 'A'.
