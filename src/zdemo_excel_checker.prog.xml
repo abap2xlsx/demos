@@ -16,6 +16,18 @@
      <ENTRY>abap2xlsx demos: check for regressions</ENTRY>
      <LENGTH>38</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_EXAXML</KEY>
+     <ENTRY>Exact XML compar. (attr.order)</ENTRY>
+     <LENGTH>38</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_PATH</KEY>
+     <ENTRY>Folder path (write demo files)</ENTRY>
+     <LENGTH>38</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
