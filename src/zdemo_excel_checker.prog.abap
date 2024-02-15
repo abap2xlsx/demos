@@ -84,10 +84,13 @@ CLASS lcl_xlsx_cleanup_for_diff DEFINITION
 
   PUBLIC SECTION.
 
+    "!
+    "! @parameter xstring | XML
+    "! @parameter normalize_xml | abap_true = order attributes in ascending order
     METHODS run
       IMPORTING
         xstring       TYPE xstring
-
+        normalize_xml TYPE abap_bool
       RETURNING
         VALUE(result) TYPE xstring
       RAISING
@@ -403,6 +406,8 @@ CLASS lcl_app DEFINITION.
 
     DATA: ref_sscrfields     TYPE REF TO sscrfields,
           p_path             TYPE zexcel_export_dir,
+          "! Do an exact comparison of XML
+          p_exaxml           TYPE abap_bool,
           splitter           TYPE REF TO cl_gui_splitter_container,
           alv_container      TYPE REF TO cl_gui_container,
           zip_diff_container TYPE REF TO cl_gui_container,
@@ -704,6 +709,7 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
           lo_filter            TYPE REF TO if_ixml_node_filter,
           lo_iterator          TYPE REF TO if_ixml_node_iterator,
           zip_cleanup_for_diff TYPE REF TO lcl_zip_cleanup_for_diff.
+    DATA lv_string TYPE string.
     FIELD-SYMBOLS:
       <file>     TYPE cl_abap_zip=>t_file,
       <ls_file2> TYPE ty_file.
@@ -719,131 +725,98 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
       RAISE EXCEPTION TYPE zcx_excel EXPORTING error = 'zip load'.
     ENDIF.
 
-    zip->get(
-      EXPORTING
-        name                    = 'docProps/core.xml'
-      IMPORTING
-        content                 = content
-      EXCEPTIONS
-        zip_index_error         = 1
-        zip_decompression_error = 2
-        OTHERS                  = 3 ).
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_excel EXPORTING error = 'docProps/core.xml not found'.
-    ENDIF.
+    LOOP AT zip->files ASSIGNING <file>.
 
-    CALL TRANSFORMATION zexcel_tr_docprops_core SOURCE XML content RESULT root = docprops_core.
-
-    CLEAR: docprops_core-creator,
-           docprops_core-description,
-           docprops_core-last_modified_by,
-           docprops_core-created,
-           docprops_core-modified.
-
-    CALL TRANSFORMATION zexcel_tr_docprops_core SOURCE root = docprops_core RESULT XML content.
-
-    zip->delete(
-      EXPORTING
-        name            = 'docProps/core.xml'
-      EXCEPTIONS
-        zip_index_error = 1
-        OTHERS          = 2 ).
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |delete before add of docProps/core.xml|.
-    ENDIF.
-
-    zip->add(
-        name    = 'docProps/core.xml'
-        content = content ).
-
-    LOOP AT zip->files ASSIGNING <file>
-        WHERE name CP 'xl/drawings/drawing*.xml'.
-
-      zip->get(
-        EXPORTING
-          name                    = <file>-name
-        IMPORTING
-          content                 = content
-        EXCEPTIONS
-          zip_index_error         = 1
-          zip_decompression_error = 2
-          OTHERS                  = 3 ).
+      zip->get( EXPORTING  name                    = <file>-name
+                IMPORTING  content                 = content
+                EXCEPTIONS zip_index_error         = 1
+                           zip_decompression_error = 2
+                           OTHERS                  = 3 ).
       IF sy-subrc <> 0.
-        RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |{ <file>-name } not found|.
+        RAISE EXCEPTION TYPE zcx_excel
+          EXPORTING error = |{ <file>-name } not found|.
       ENDIF.
 
-      lo_ixml = cl_ixml=>create( ).
-      lo_streamfactory = lo_ixml->create_stream_factory( ).
-      lo_istream = lo_streamfactory->create_istream_xstring( content ).
-      lo_document = lo_ixml->create_document( ).
-      lo_parser = lo_ixml->create_parser(
-                  document       = lo_document
-                  istream        = lo_istream
-                  stream_factory = lo_streamfactory ).
-      lo_parser->parse( ).
-
-      lo_filter = lo_document->create_filter_name_ns(
-                  name      = 'cNvPr'
-                  namespace = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing' ).
-      lo_iterator = lo_document->create_iterator_filtered( lo_filter ).
-      DO.
-        lo_element ?= lo_iterator->get_next( ).
-        IF lo_element IS NOT BOUND.
-          EXIT.
+      IF normalize_xml = abap_true.
+        IF    <file>-name CP '*.xml'
+           OR <file>-name CP '*.vml'.
+          lv_string = cl_abap_codepage=>convert_from( content ).
+          TRY.
+              CALL METHOD ('ZCL_EXCEL_XML')=>rewrite_xml_via_sxml
+                EXPORTING iv_xml_string = lv_string
+                RECEIVING rv_string     = lv_string.
+              content = cl_abap_codepage=>convert_to( lv_string ).
+            CATCH cx_sy_dyn_call_illegal_class ##NO_HANDLER.
+              MESSAGE 'Class ZCL_EXCEL_XML is missing, version of abap2xlsx is too old' TYPE 'E'.
+          ENDTRY.
         ENDIF.
-        lo_element->set_attribute_ns( name = 'name' value = '' ).
-      ENDDO.
-
-      CLEAR content.
-      lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
-      lo_renderer = lo_ixml->create_renderer(
-                  document = lo_document
-                  ostream  = lo_ostream ).
-      lo_renderer->render( ).
-
-      ls_file-name = <file>-name.
-      ls_file-content = content.
-      APPEND ls_file TO lt_file.
-
-    ENDLOOP.
-
-    LOOP AT zip->files ASSIGNING <file>
-        WHERE name CP 'xl/comments*.xml'.
-
-      zip->get(
-        EXPORTING
-          name                    = <file>-name
-        IMPORTING
-          content                 = content
-        EXCEPTIONS
-          zip_index_error         = 1
-          zip_decompression_error = 2
-          OTHERS                  = 3 ).
-      IF sy-subrc <> 0.
-        RAISE EXCEPTION TYPE zcx_excel EXPORTING error = |{ <file>-name } not found|.
       ENDIF.
 
-      lo_ixml = cl_ixml=>create( ).
-      lo_streamfactory = lo_ixml->create_stream_factory( ).
-      lo_istream = lo_streamfactory->create_istream_xstring( content ).
-      lo_document = lo_ixml->create_document( ).
-      lo_parser = lo_ixml->create_parser(
-                  document       = lo_document
-                  istream        = lo_istream
-                  stream_factory = lo_streamfactory ).
-      lo_parser->parse( ).
+      IF <file>-name = 'docProps/core.xml'.
 
-      lo_element = lo_document->find_from_path( path = `/comments/authors/author` ).
-      IF lo_element IS BOUND.
-        lo_element->set_value( '' ).
+        CALL TRANSFORMATION zexcel_tr_docprops_core SOURCE XML content RESULT root = docprops_core.
+
+        CLEAR: docprops_core-creator,
+               docprops_core-description,
+               docprops_core-last_modified_by,
+               docprops_core-created,
+               docprops_core-modified.
+
+        CALL TRANSFORMATION zexcel_tr_docprops_core SOURCE root = docprops_core RESULT XML content.
+
+      ELSEIF <file>-name CP 'xl/drawings/drawing*.xml'.
+
+        lo_ixml = cl_ixml=>create( ).
+        lo_streamfactory = lo_ixml->create_stream_factory( ).
+        lo_istream = lo_streamfactory->create_istream_xstring( content ).
+        lo_document = lo_ixml->create_document( ).
+        lo_parser = lo_ixml->create_parser( document       = lo_document
+                                            istream        = lo_istream
+                                            stream_factory = lo_streamfactory ).
+        lo_parser->parse( ).
+
+        lo_filter = lo_document->create_filter_name_ns(
+                        name      = 'cNvPr'
+                        namespace = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing' ).
+        lo_iterator = lo_document->create_iterator_filtered( lo_filter ).
+        DO.
+          lo_element ?= lo_iterator->get_next( ).
+          IF lo_element IS NOT BOUND.
+            EXIT.
+          ENDIF.
+          lo_element->set_attribute_ns( name  = 'name'
+                                        value = '' ).
+        ENDDO.
+
+        CLEAR content.
+        lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
+        lo_renderer = lo_ixml->create_renderer( document = lo_document
+                                                ostream  = lo_ostream ).
+        lo_renderer->render( ).
+
+      ELSEIF <file>-name CP 'xl/comments*.xml'.
+
+        lo_ixml = cl_ixml=>create( ).
+        lo_streamfactory = lo_ixml->create_stream_factory( ).
+        lo_istream = lo_streamfactory->create_istream_xstring( content ).
+        lo_document = lo_ixml->create_document( ).
+        lo_parser = lo_ixml->create_parser( document       = lo_document
+                                            istream        = lo_istream
+                                            stream_factory = lo_streamfactory ).
+        lo_parser->parse( ).
+
+        lo_element = lo_document->find_from_path( path = `/comments/authors/author` ).
+        IF lo_element IS BOUND.
+          lo_element->set_value( '' ).
+        ENDIF.
+
+        CLEAR content.
+        lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
+        lo_renderer = lo_ixml->create_renderer( document = lo_document
+                                                ostream  = lo_ostream ).
+        lo_renderer->render( ).
+
       ENDIF.
-
-      CLEAR content.
-      lo_ostream = lo_streamfactory->create_ostream_xstring( content ).
-      lo_renderer = lo_ixml->create_renderer(
-                  document = lo_document
-                  ostream  = lo_ostream ).
-      lo_renderer->render( ).
 
       ls_file-name = <file>-name.
       ls_file-content = content.
@@ -1860,6 +1833,7 @@ CLASS lcl_app IMPLEMENTATION.
   METHOD check_regression.
 
     DATA: xlsx_cleanup_for_diff TYPE REF TO lcl_xlsx_cleanup_for_diff.
+    DATA lv_normalize_xml TYPE abap_bool.
 
 
     result-xlsx_just_now = gui_upload( file_name = p_path && lv_filesep && demo-filename ).
@@ -1876,8 +1850,11 @@ CLASS lcl_app IMPLEMENTATION.
     ELSE.
 
       CREATE OBJECT xlsx_cleanup_for_diff.
-      result-compare_xlsx_just_now = xlsx_cleanup_for_diff->run( result-xlsx_just_now ).
-      result-compare_xlsx_reference = xlsx_cleanup_for_diff->run( result-xlsx_reference ).
+      lv_normalize_xml = boolc( p_exaxml = abap_false ).
+      result-compare_xlsx_just_now  = xlsx_cleanup_for_diff->run( xstring       = result-xlsx_just_now
+                                                                  normalize_xml = lv_normalize_xml ).
+      result-compare_xlsx_reference = xlsx_cleanup_for_diff->run( xstring       = result-xlsx_reference
+                                                                  normalize_xml = lv_normalize_xml ).
 
       result-diff = boolc( result-compare_xlsx_just_now <> result-compare_xlsx_reference ).
 
@@ -2365,6 +2342,9 @@ CLASS lcl_app IMPLEMENTATION.
     READ TABLE lt_sel_255 WITH KEY selname = 'P_PATH' ASSIGNING <ls_sel_255>.
     ASSERT sy-subrc = 0.
     p_path = <ls_sel_255>-low.
+    READ TABLE lt_sel_255 WITH KEY selname = 'P_EXAXML' ASSIGNING <ls_sel_255>.
+    ASSERT sy-subrc = 0.
+    p_exaxml = <ls_sel_255>-low.
 
   ENDMETHOD.
 
@@ -2524,6 +2504,7 @@ TABLES sscrfields.
 DATA: app TYPE REF TO lcl_app.
 
 PARAMETERS p_path TYPE zexcel_export_dir.
+PARAMETERS p_exaxml AS CHECKBOX DEFAULT abap_true.
 
 SELECTION-SCREEN BEGIN OF SCREEN 1001.
 SELECTION-SCREEN FUNCTION KEY 1.
