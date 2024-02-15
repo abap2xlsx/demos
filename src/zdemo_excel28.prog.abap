@@ -20,6 +20,7 @@ DATA: lv_file      TYPE xstring,
 DATA: lv_full_path      TYPE string,
       lv_workdir        TYPE string,
       lv_file_separator TYPE c.
+CONSTANTS c_initial_date TYPE d VALUE IS INITIAL.
 
 CONSTANTS: lv_default_file_name TYPE string VALUE '28_HelloWorld.csv'.
 
@@ -54,6 +55,7 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 3 ip_value = sy-uzeit ).
   lo_worksheet->set_cell( ip_column = 'A' ip_row = 4 ip_value = 'Initial Date' ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 4 ip_value = space ip_abap_type = 'D' ).
+  lo_worksheet->set_cell( ip_column = 'C' ip_row = 4 ip_value = c_initial_date ).
 
   lo_column = lo_worksheet->get_column( 'B' ).
   lo_column->set_width( 11 ).
@@ -66,7 +68,7 @@ START-OF-SELECTION.
   zcl_excel_writer_csv=>set_delimiter( ip_value = cl_abap_char_utilities=>horizontal_tab ).
   zcl_excel_writer_csv=>set_enclosure( ip_value = '''' ).
   zcl_excel_writer_csv=>set_endofline( ip_value = cl_abap_char_utilities=>cr_lf ).
-  zcl_excel_writer_csv=>set_initial_ext_date( ip_value = '00/00/0000' ).
+  zcl_excel_writer_csv=>set_initial_ext_date( ip_value = '' ).
 
   zcl_excel_writer_csv=>set_active_sheet_index( i_active_worksheet = 2 ).
 
