@@ -20,6 +20,7 @@ DATA: lv_file      TYPE xstring,
 DATA: lv_full_path      TYPE string,
       lv_workdir        TYPE string,
       lv_file_separator TYPE c.
+CONSTANTS c_initial_date TYPE d VALUE IS INITIAL.
 
 CONSTANTS: lv_default_file_name TYPE string VALUE '28_HelloWorld.csv'.
 
@@ -28,7 +29,7 @@ PARAMETERS: p_path TYPE string.
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_path.
 
   cl_gui_frontend_services=>directory_browse( EXPORTING initial_folder  = p_path
-                                               CHANGING selected_folder = p_path ).
+                                              CHANGING  selected_folder = p_path ).
 
 INITIALIZATION.
   cl_gui_frontend_services=>get_sapgui_workdir( CHANGING sapworkdir = lv_workdir ).
@@ -52,6 +53,9 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 2 ip_value = 'Hello world' ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 3 ip_value = sy-datum ).
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 3 ip_value = sy-uzeit ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 4 ip_value = 'Initial Date' ).
+  lo_worksheet->set_cell( ip_column = 'B' ip_row = 4 ip_value = space ip_abap_type = 'D' ).
+  lo_worksheet->set_cell( ip_column = 'C' ip_row = 4 ip_value = c_initial_date ).
 
   lo_column = lo_worksheet->get_column( 'B' ).
   lo_column->set_width( 11 ).
@@ -64,6 +68,7 @@ START-OF-SELECTION.
   zcl_excel_writer_csv=>set_delimiter( ip_value = cl_abap_char_utilities=>horizontal_tab ).
   zcl_excel_writer_csv=>set_enclosure( ip_value = '''' ).
   zcl_excel_writer_csv=>set_endofline( ip_value = cl_abap_char_utilities=>cr_lf ).
+  zcl_excel_writer_csv=>set_initial_ext_date( ip_value = '' ).
 
   zcl_excel_writer_csv=>set_active_sheet_index( i_active_worksheet = 2 ).
 
@@ -83,9 +88,9 @@ START-OF-SELECTION.
   cl_gui_frontend_services=>gui_download( EXPORTING bin_filesize = lv_bytecount
                                                     filename     = lv_full_path
                                                     filetype     = 'BIN'
-                                           CHANGING data_tab     = lt_file_tab ).
+                                          CHANGING  data_tab     = lt_file_tab ).
 
-  zcl_excel_writer_csv=>set_active_sheet_index_by_name(  i_worksheet_name = 'Sheet1' ).
+  zcl_excel_writer_csv=>set_active_sheet_index_by_name( i_worksheet_name = 'Sheet1' ).
   lv_file = lo_excel_writer->write_file( lo_excel ).
   REPLACE FIRST OCCURRENCE OF '_Sheet2.csv'  IN lv_full_path WITH '_Sheet1.csv'.
 
@@ -102,4 +107,4 @@ START-OF-SELECTION.
   cl_gui_frontend_services=>gui_download( EXPORTING bin_filesize = lv_bytecount
                                                     filename     = lv_full_path
                                                     filetype     = 'BIN'
-                                           CHANGING data_tab     = lt_file_tab ).
+                                          CHANGING  data_tab     = lt_file_tab ).
