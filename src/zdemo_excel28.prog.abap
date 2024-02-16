@@ -54,8 +54,7 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 3 ip_value = sy-datum ).
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 3 ip_value = sy-uzeit ).
   lo_worksheet->set_cell( ip_column = 'A' ip_row = 4 ip_value = 'Initial Date' ).
-  lo_worksheet->set_cell( ip_column = 'B' ip_row = 4 ip_value = space ip_abap_type = 'D' ).
-  lo_worksheet->set_cell( ip_column = 'C' ip_row = 4 ip_value = c_initial_date ).
+  lo_worksheet->set_cell( ip_column = 'B' ip_row = 4 ip_value = c_initial_date ).
 
   lo_column = lo_worksheet->get_column( 'B' ).
   lo_column->set_width( 11 ).
