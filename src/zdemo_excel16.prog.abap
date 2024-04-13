@@ -18,10 +18,19 @@ DATA: ls_io TYPE skwf_io.
 CONSTANTS: gc_save_file_name TYPE string VALUE '16_Drawings.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 
-PARAMETERS: p_objid  TYPE sdok_docid DEFAULT '456694429165174BE10000000A1550C0', " Question mark in standard Web Dynpro WDT_QUIZ
-            p_class  TYPE sdok_class DEFAULT 'M_IMAGE_P',
-            pobjtype TYPE skwf_ioty  DEFAULT 'P'.
+SELECTION-SCREEN BEGIN OF BLOCK b01 WITH FRAME TITLE text-b01.
+  PARAMETERS p_wobjid TYPE w3objid DEFAULT 'SAPLOGO.GIF'.
+SELECTION-SCREEN END OF BLOCK b01.
 
+SELECTION-SCREEN BEGIN OF BLOCK b02 WITH FRAME TITLE text-b02.
+  PARAMETERS p_file TYPE string LOWER CASE DEFAULT '<SAPGUI-directory>\wwi\graphics\W_bio.bmp'.
+SELECTION-SCREEN END OF BLOCK b02.
+
+SELECTION-SCREEN BEGIN OF BLOCK b03 WITH FRAME TITLE text-b03.
+  PARAMETERS p_mobjid TYPE sdok_docid DEFAULT '456694429165174BE10000000A1550C0'. " Question mark in standard Web Dynpro WDT_QUIZ
+  PARAMETERS p_class TYPE sdok_class DEFAULT 'M_IMAGE_P'.
+  PARAMETERS pobjtype TYPE skwf_ioty DEFAULT 'P'.
+SELECTION-SCREEN END OF BLOCK b03.
 
 START-OF-SELECTION.
 
@@ -33,10 +42,31 @@ START-OF-SELECTION.
         lv_len     TYPE i,
         lv_content TYPE xstring,
         ls_key     TYPE wwwdatatab.
+  DATA gv_file             TYPE string.
 
+  DATA gv_sapgui_directory TYPE string.
+  cl_gui_frontend_services=>get_sapgui_directory( CHANGING   sapgui_directory = gv_sapgui_directory
+                                                  EXCEPTIONS cntl_error       = 1
+                                                             error_no_gui     = 2 ).
+  IF sy-subrc <> 0.
+    MESSAGE |Exception { sy-subrc } during CL_GUI_FRONTEND_SERVICES=>GET_SAPGUI_DIRECTORY| TYPE 'I' DISPLAY LIKE 'E'.
+    STOP.
+  ENDIF.
+  " flush to send previous call to frontend
+  cl_gui_cfw=>flush( EXCEPTIONS cntl_system_error = 1
+                                cntl_error        = 2
+                                OTHERS            = 3 ).
+  IF sy-subrc <> 0.
+    MESSAGE |Exception { sy-subrc } during CL_GUI_CFW=>FLUSH| TYPE 'I' DISPLAY LIKE 'E'.
+    STOP.
+  ENDIF.
+
+  gv_file = replace( val  = p_file
+                     sub  = '<SAPGUI-directory>'
+                     with = gv_sapgui_directory ).
   CALL METHOD cl_gui_frontend_services=>gui_upload
     EXPORTING
-      filename                = 'c:\Program Files\SAP\FrontEnd\SAPgui\wwi\graphics\W_bio.bmp'
+      filename                = gv_file
       filetype                = 'BIN'
     IMPORTING
       filelength              = lv_len
@@ -63,6 +93,8 @@ START-OF-SELECTION.
       error_no_gui            = 18
       OTHERS                  = 19.
   IF sy-subrc <> 0.
+    MESSAGE |Exception { sy-subrc } while uploading the file at "{ p_file }"| TYPE 'I' DISPLAY LIKE 'E'.
+    STOP.
   ENDIF.
 
   CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
@@ -77,7 +109,9 @@ START-OF-SELECTION.
       OTHERS       = 2.
   IF sy-subrc <> 0.
     MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+               DISPLAY LIKE 'E'.
+    STOP.
   ENDIF.
 
   " Get active sheet
@@ -91,7 +125,7 @@ START-OF-SELECTION.
                             ip_from_col = 'B' ).
 
   ls_key-relid = 'MI'.
-  ls_key-objid = 'SAPLOGO.GIF'.
+  ls_key-objid = p_wobjid.
   lo_drawing->set_media_www( ip_key = ls_key
                              ip_width = 166
                              ip_height = 75 ).
@@ -100,7 +134,7 @@ START-OF-SELECTION.
   lo_worksheet->add_drawing( lo_drawing ).
 
   " another drawing from a XSTRING read from a file
-  lo_worksheet->set_cell( ip_column = 'B' ip_row = 8 ip_value = 'Image from a file (c:\Program Files\SAP\FrontEnd\SAPgui\wwi\graphics\W_bio.bmp)' ).
+  lo_worksheet->set_cell( ip_column = 'B' ip_row = 8 ip_value = |Image from a file ({ p_file })| ).
   lo_drawing = lo_excel->add_new_drawing( ).
   lo_drawing->set_position( ip_from_row = 9
                             ip_from_col = 'B' ).
@@ -111,7 +145,7 @@ START-OF-SELECTION.
 
   lo_worksheet->add_drawing( lo_drawing ).
 
-  ls_io-objid   = p_objid.
+  ls_io-objid   = p_mobjid.
   ls_io-class   = p_class.
   ls_io-objtype = pobjtype.
   IF ls_io IS NOT INITIAL.
