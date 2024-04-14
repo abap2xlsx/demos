@@ -12,9 +12,71 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>B01</KEY>
+     <ENTRY>Web Repository file</ENTRY>
+     <LENGTH>83</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B02</KEY>
+     <ENTRY>Frontend file</ENTRY>
+     <LENGTH>83</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B03</KEY>
+     <ENTRY>MIME Repository file</ENTRY>
+     <LENGTH>83</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>BL1</KEY>
+     <ENTRY>Output options</ENTRY>
+     <LENGTH>24</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>abap2xlsx Demo: Drawings</ENTRY>
-     <LENGTH>25</LENGTH>
+     <LENGTH>24</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>POBJTYPE</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_CLASS</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_FILE</KEY>
+     <ENTRY>Frontend file path</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_MOBJID</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_PATH</KEY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_WOBJID</KEY>
+     <ENTRY>Image ID (Binary Data)</ENTRY>
+     <LENGTH>30</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
