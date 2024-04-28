@@ -60,8 +60,11 @@ AT SELECTION-SCREEN OUTPUT.
 
 INITIALIZATION.
   IF sy-batch IS INITIAL.
-    cl_gui_frontend_services=>get_sapgui_workdir( CHANGING sapworkdir = p_path ).
-    cl_gui_cfw=>flush( ).
+    cl_gui_frontend_services=>get_sapgui_workdir( CHANGING   sapworkdir = p_path
+                                                  EXCEPTIONS OTHERS     = 1 ).
+    IF sy-subrc = 0.
+      cl_gui_cfw=>flush( ).
+    ENDIF.
   ENDIF.
   lcl_output=>parametertexts( ).  " If started in language w/o textelements translated set defaults
   txt_bl1 = 'Output options'(bl1).
