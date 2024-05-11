@@ -73,7 +73,7 @@ START-OF-SELECTION.
       WHEN 'FLDATE'.
         <fs_field_catalog>-position   = 2.
         <fs_field_catalog>-dynpfld    = abap_true.
-        <fs_field_catalog>-width      = 17.
+        <fs_field_catalog>-width      = 13.
       WHEN 'PRICE'.
         <fs_field_catalog>-position   = 1.
         <fs_field_catalog>-dynpfld    = abap_true.
