@@ -29,7 +29,18 @@ START-OF-SELECTION.
   lo_comment->set_text( ip_ref = 'B13' ip_text = 'This is how it begins to be debug time...' ).
   lo_worksheet->add_comment( lo_comment ).
   lo_comment = lo_excel->add_new_comment( ).
-  lo_comment->set_text( ip_ref = 'C18' ip_text = 'Another comment' ).
+  " The top left position of the comment box will be at the BOTTOM RIGHT position of cell D19 (column 4, row 19)
+  " and the bottom right position of the comment box will be at the BOTTOM RIGHT position of cell F22 (column 6, row 22).
+  lo_comment->set_text( ip_ref           = 'C18'
+                        ip_text          = 'A comment at any position and any size'
+                        ip_left_column   = 4
+                        ip_left_offset   = 0
+                        ip_top_row       = 19
+                        ip_top_offset    = 0
+                        ip_right_column  = 6
+                        ip_right_offset  = 0
+                        ip_bottom_row    = 22
+                        ip_bottom_offset = 0 ).
   lo_worksheet->add_comment( lo_comment ).
   lo_comment = lo_excel->add_new_comment( ).
   CONCATENATE 'A comment split' cl_abap_char_utilities=>cr_lf 'on 2 lines?' INTO lv_comment.
