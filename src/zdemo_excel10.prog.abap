@@ -73,6 +73,7 @@ START-OF-SELECTION.
       WHEN 'FLDATE'.
         <fs_field_catalog>-position   = 2.
         <fs_field_catalog>-dynpfld    = abap_true.
+        <fs_field_catalog>-width      = 13.
       WHEN 'PRICE'.
         <fs_field_catalog>-position   = 1.
         <fs_field_catalog>-dynpfld    = abap_true.
@@ -88,9 +89,6 @@ START-OF-SELECTION.
   lo_worksheet->bind_table( ip_table          = lt_test
                             is_table_settings = ls_table_settings
                             it_field_catalog  = lt_field_catalog ).
-
-  lo_column = lo_worksheet->get_column( ip_column = 'D' ). "make date field a bit wider
-  lo_column->set_width( ip_width = 13 ).
 
 
 *** Create output
