@@ -126,7 +126,9 @@ START-OF-SELECTION.
   " create global drawing, set position and media from web repository
   lo_drawing = lo_excel->add_new_drawing( ).
   lo_drawing->set_position( ip_from_row = 3
-                            ip_from_col = 'B' ).
+                            ip_from_col = 'B'
+                            ip_rowoff   = 85725    " optional little shift
+                            ip_coloff   = 47625 ). " optional little shift
 
   ls_key-relid = 'MI'.
   ls_key-objid = p_wobjid.
