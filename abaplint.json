@@ -22,14 +22,15 @@
     "errorNamespace": "^(Z|Y)",
     "globalConstants": [
       "cntb_btype_button"
-    ],
-    "globalMacros": []
+    ]
   },
   "rules": {
     "constant_classes": true,
+    "align_parameters": false,
+    "local_testclass_consistency": true,
+    "classic_exceptions_overlap": true,
     "cyclic_oo": false,
     "many_parentheses": true,
-    "pragma_placement": true,
     "unused_ddic": true,
     "dangerous_statement": true,
     "db_operation_in_loop": false,
@@ -84,6 +85,9 @@
     "avoid_use": {
       "define": true,
       "describeLines": false,
+      "testSeams": true,
+      "exportToDatabase": true,
+      "exportToMemory": true,
       "statics": false,
       "defaultKey": false,
       "break": true
@@ -94,7 +98,6 @@
     "check_comments": false,
     "check_ddic": true,
     "check_include": true,
-    "check_no_handler_pragma": true,
     "check_syntax": true,
     "check_text_elements": false,
     "check_transformation_exists": true,
@@ -124,7 +127,6 @@
       "ignoreFunctionModuleName": false
     },
     "local_class_naming": false,
-    "local_testclass_location": true,
     "main_file_contents": true,
     "message_exists": false,
     "msag_consistency": true,
@@ -170,7 +172,33 @@
     "line_only_punc": false,
     "obsolete_statement": {
       "refresh": true,
-      "move": true
+      "compute": true,
+      "add": false,
+      "subtract": false,
+      "multiply": true,
+      "divide": true,
+      "move": true,
+      "requested": true,
+      "occurs": true,
+      "setExtended": true,
+      "withHeaderLine": true,
+      "fieldSymbolStructure": true,
+      "typePools": true,
+      "load": true,
+      "parameter": true,
+      "ranges": true,
+      "communication": true,
+      "pack": true,
+      "selectWithoutInto": true,
+      "freeMemory": true,
+      "exitFromSQL": true,
+      "sortByFS": true,
+      "callTransformation": true,
+      "regex": true,
+      "occurences": true,
+      "clientSpecified": true,
+      "formDefinition": true,
+      "formImplementation": true
     },
     "start_at_tab": false,
     "whitespace_end": true,
