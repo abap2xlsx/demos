@@ -1,7 +1,7 @@
 # Demos
 Demonstration programs
 
-Report ZABAP2XLSX_DEMO_SHOW display all demo reports. Listed demo reports can be viewed and executed by double click.
+Report `ZABAP2XLSX_DEMO_SHOW` display all demo reports. Listed demo reports can be viewed and executed by double click.
 
 ![image](https://user-images.githubusercontent.com/75187288/215830193-3a98e61d-91a5-43cd-866d-1ae45a0f9312.png)
 
