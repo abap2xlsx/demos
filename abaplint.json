@@ -111,7 +111,14 @@
     "if_in_if": false,
     "implement_methods": true,
     "in_statement_indentation": false,
-    "indentation": false,
+    "indentation": {
+      "ignoreExceptions": true,
+      "alignTryCatch": false,
+      "selectionScreenBlockIndentation": true,
+      "globalClassSkipFirst": false,
+      "ignoreGlobalClassDefinition": false,
+      "ignoreGlobalInterface": false
+    },
     "keep_single_parameter_on_one_line": false,
     "keyword_case": {
       "style": "upper",
