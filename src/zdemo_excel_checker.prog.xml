@@ -28,6 +28,12 @@
      <ENTRY>Folder path (write demo files)</ENTRY>
      <LENGTH>38</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_PROG</KEY>
+     <ENTRY>Demo program</ENTRY>
+     <LENGTH>20</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
