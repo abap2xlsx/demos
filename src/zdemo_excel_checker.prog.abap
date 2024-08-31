@@ -2868,7 +2868,8 @@ CLASS lcl_app IMPLEMENTATION.
         OTHERS              = 3.
 
     " The empty SELECT-OPTIONS contain an empty line which is to be skipped.
-    DELETE lt_sel_255 WHERE     sign   IS INITIAL
+    DELETE lt_sel_255 WHERE     kind    = 'S'
+                            AND sign   IS INITIAL
                             AND option IS INITIAL
                             AND low    IS INITIAL
                             AND high   IS INITIAL.
