@@ -7,6 +7,14 @@ REPORT zdemo_excel_checker.
 
 
 CLASS lcl_xlsx_diff_file_ext DEFINITION DEFERRED.
+CLASS ltc_rewrite_xml_via_sxml DEFINITION DEFERRED.
+
+
+CLASS lcx_unexpected DEFINITION INHERITING FROM cx_no_check.
+  PUBLIC SECTION.
+    METHODS get_text REDEFINITION.
+    METHODS get_longtext REDEFINITION.
+ENDCLASS.
 
 
 CLASS lcx_zip_diff DEFINITION
@@ -287,6 +295,121 @@ CLASS lcl_xlsx_diff_file_ext DEFINITION
 ENDCLASS.
 
 
+CLASS lcl_rewrite_xml_via_sxml DEFINITION
+    FINAL
+    CREATE PRIVATE
+    FRIENDS ltc_rewrite_xml_via_sxml.
+
+  PUBLIC SECTION.
+
+    CLASS-METHODS execute
+      IMPORTING
+        iv_xml_string TYPE string
+        iv_trace      TYPE abap_bool DEFAULT abap_false
+      RETURNING
+        VALUE(rv_string) TYPE string.
+
+  PRIVATE SECTION.
+
+    TYPES:
+      BEGIN OF ts_attribute,
+        name      TYPE string,
+        namespace TYPE string,
+        prefix    TYPE string,
+      END OF ts_attribute.
+    TYPES tt_attribute TYPE STANDARD TABLE OF ts_attribute WITH DEFAULT KEY.
+    TYPES:
+      BEGIN OF ts_element,
+        name      TYPE string,
+        namespace TYPE string,
+        prefix    TYPE string,
+      END OF ts_element.
+    TYPES:
+      BEGIN OF ts_nsbinding,
+        prefix TYPE string,
+        nsuri  TYPE string,
+      END OF ts_nsbinding.
+    TYPES tt_nsbinding TYPE STANDARD TABLE OF ts_nsbinding WITH DEFAULT KEY.
+    TYPES:
+      BEGIN OF ts_complete_element,
+        element    TYPE ts_element,
+        attributes TYPE tt_attribute,
+        nsbindings TYPE tt_nsbinding,
+      END OF ts_complete_element.
+
+    CLASS-DATA complete_parsed_elements TYPE TABLE OF ts_complete_element.
+
+ENDCLASS.
+
+
+CLASS ltc_rewrite_xml_via_sxml DEFINITION
+      FOR TESTING
+      DURATION SHORT
+      RISK LEVEL HARMLESS.
+
+  PRIVATE SECTION.
+
+    METHODS default_namespace FOR TESTING RAISING cx_static_check.
+    METHODS default_namespace_removed FOR TESTING RAISING cx_static_check.
+    METHODS namespace FOR TESTING RAISING cx_static_check.
+    METHODS namespace_2 FOR TESTING RAISING cx_static_check.
+    METHODS namespace_3 FOR TESTING RAISING cx_static_check.
+
+    DATA parsed_element_index TYPE i.
+    DATA string               TYPE string.
+
+    METHODS get_expected_attribute
+      IMPORTING
+        iv_name          TYPE string
+        iv_namespace     TYPE string DEFAULT ``
+        iv_prefix        TYPE string DEFAULT ``
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_attribute.
+
+    METHODS get_expected_element
+      IMPORTING
+        iv_name          TYPE string
+        iv_namespace     TYPE string DEFAULT ``
+        iv_prefix        TYPE string DEFAULT ``
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_element.
+
+    METHODS get_expected_nsbinding
+      IMPORTING
+        iv_prefix        TYPE string DEFAULT ``
+        iv_nsuri         TYPE string DEFAULT ``
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_nsbinding.
+
+    METHODS get_parsed_element
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_element.
+
+    METHODS get_parsed_element_attribute
+      IMPORTING
+        iv_index         TYPE i
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_attribute.
+
+    METHODS get_parsed_element_nsbinding
+      IMPORTING
+        iv_index         TYPE i
+      RETURNING
+        VALUE(rs_result) TYPE lcl_rewrite_xml_via_sxml=>ts_nsbinding.
+
+    METHODS rewrite_xml_via_sxml
+      IMPORTING
+        iv_xml_string TYPE string
+      RETURNING
+        VALUE(rv_string) TYPE string.
+
+    METHODS set_current_parsed_element
+      IMPORTING
+        iv_index TYPE i.
+
+ENDCLASS.
+
+
 CLASS lcl_app DEFINITION.
 
   PUBLIC SECTION.
@@ -405,6 +528,7 @@ CLASS lcl_app DEFINITION.
         zcx_excel.
 
     DATA: ref_sscrfields     TYPE REF TO sscrfields,
+          s_prog             TYPE RANGE OF trdir-name,
           p_path             TYPE zexcel_export_dir,
           "! Do an exact comparison of XML
           p_exaxml           TYPE abap_bool,
@@ -416,6 +540,16 @@ CLASS lcl_app DEFINITION.
           alv_table          TYPE ty_alv_table,
           lv_filesep         TYPE c LENGTH 1.
 
+ENDCLASS.
+
+
+CLASS lcx_unexpected IMPLEMENTATION.
+  METHOD get_longtext.
+    result = get_text( ).
+  ENDMETHOD.
+  METHOD get_text.
+    result = 'Unexpected situation. Please contact support' ##NO_TEXT.
+  ENDMETHOD.
 ENDCLASS.
 
 
@@ -742,9 +876,10 @@ CLASS lcl_xlsx_cleanup_for_diff IMPLEMENTATION.
            OR <file>-name CP '*.vml'.
           lv_string = cl_abap_codepage=>convert_from( content ).
           TRY.
-              CALL METHOD ('ZCL_EXCEL_XML')=>rewrite_xml_via_sxml
-                EXPORTING iv_xml_string = lv_string
-                RECEIVING rv_string     = lv_string.
+*              CALL METHOD ('ZCL_EXCEL_XML')=>rewrite_xml_via_sxml
+*                EXPORTING iv_xml_string = lv_string
+*                RECEIVING rv_string     = lv_string.
+              lv_string = lcl_rewrite_xml_via_sxml=>execute( lv_string ).
               content = cl_abap_codepage=>convert_to( lv_string ).
             CATCH cx_sy_dyn_call_illegal_class ##NO_HANDLER.
               MESSAGE 'Class ZCL_EXCEL_XML is missing, version of abap2xlsx is too old' TYPE 'E'.
@@ -1701,12 +1836,384 @@ CLASS lcl_xlsx_diff_file_ext IMPLEMENTATION.
 ENDCLASS.
 
 
+CLASS lcl_rewrite_xml_via_sxml IMPLEMENTATION.
+  METHOD execute.
+    TYPES:
+      BEGIN OF ts_level,
+        number     TYPE i,
+        nsbindings TYPE if_sxml_named=>nsbindings,
+      END OF ts_level.
+    TYPES:
+      BEGIN OF ts_attribute_sorting,
+        prefix TYPE string,
+        name   TYPE string,
+        object TYPE REF TO if_sxml_attribute,
+      END OF ts_attribute_sorting.
+
+    DATA lv_current_level     TYPE i.
+    DATA ls_level             TYPE ts_level.
+    DATA lt_level             TYPE STANDARD TABLE OF ts_level WITH DEFAULT KEY.
+    DATA lo_reader            TYPE REF TO if_sxml_reader.
+    DATA lo_string_writer     TYPE REF TO cl_sxml_string_writer.
+    DATA lo_writer            TYPE REF TO if_sxml_writer.
+    DATA lo_node              TYPE REF TO if_sxml_node.
+    DATA lo_close_element     TYPE REF TO if_sxml_close_element.
+    DATA lo_open_element      TYPE REF TO if_sxml_open_element.
+    DATA lt_nsbinding         TYPE if_sxml_named=>nsbindings.
+    DATA lt_attribute         TYPE if_sxml_attribute=>attributes.
+    DATA ls_complete_element  TYPE ts_complete_element.
+    DATA lr_nsbinding         TYPE REF TO if_sxml_named=>nsbinding.
+    DATA ls_nsbinding         TYPE ts_nsbinding.
+    DATA lo_attribute         TYPE REF TO if_sxml_attribute.
+    DATA ls_attribute         TYPE ts_attribute.
+    DATA lt_attribute_sorting TYPE TABLE OF ts_attribute_sorting.
+    DATA ls_attribute_sorting TYPE ts_attribute_sorting.
+    DATA lt_new_nsbinding     TYPE if_sxml_named=>nsbindings.
+    DATA lo_value_node        TYPE REF TO if_sxml_value_node.
+    DATA lv_string            TYPE string.
+
+    FIELD-SYMBOLS <ls_level> TYPE ts_level.
+
+    CLEAR complete_parsed_elements.
+
+    lv_current_level = 1.
+    ls_level-number = lv_current_level.
+    INSERT ls_level INTO TABLE lt_level ASSIGNING <ls_level>.
+
+    lo_reader = cl_sxml_string_reader=>create( input = cl_abap_codepage=>convert_to( iv_xml_string ) ).
+    lo_string_writer = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_xml10 ).
+    lo_writer = lo_string_writer.
+
+    DO.
+      lo_node = lo_reader->read_next_node( ).
+      IF lo_node IS NOT BOUND.
+        " End of XML
+        EXIT.
+      ENDIF.
+
+      CASE lo_node->type.
+        WHEN lo_node->co_nt_attribute.
+          "should not happen in OO parsing (READ_NEXT_NODE)
+          RAISE EXCEPTION TYPE lcx_unexpected.
+
+        WHEN lo_node->co_nt_element_close.
+
+          DELETE lt_level INDEX lv_current_level.
+          lv_current_level = lv_current_level - 1.
+          READ TABLE lt_level INDEX lv_current_level ASSIGNING <ls_level>.
+
+          lo_close_element = lo_writer->new_close_element( ).
+          lo_writer->write_node( lo_close_element ).
+
+        WHEN lo_node->co_nt_element_open.
+          lo_open_element ?= lo_node.
+
+          lt_nsbinding = lo_reader->get_nsbindings( ).
+          lt_attribute = lo_open_element->get_attributes( ).
+
+          IF iv_trace = abap_true.
+            CLEAR ls_complete_element.
+            ls_complete_element-element-name      = lo_open_element->qname-name.
+            ls_complete_element-element-namespace = lo_open_element->qname-namespace.
+            ls_complete_element-element-prefix    = lo_open_element->prefix.
+            LOOP AT lt_nsbinding REFERENCE INTO lr_nsbinding.
+              ls_nsbinding-prefix = lr_nsbinding->prefix.
+              ls_nsbinding-nsuri  = lr_nsbinding->nsuri.
+              INSERT ls_nsbinding INTO TABLE ls_complete_element-nsbindings.
+            ENDLOOP.
+            LOOP AT lt_attribute INTO lo_attribute.
+              ls_attribute-name      = lo_attribute->qname-name.
+              ls_attribute-namespace = lo_attribute->qname-namespace.
+              ls_attribute-prefix    = lo_attribute->prefix.
+              INSERT ls_attribute INTO TABLE ls_complete_element-attributes.
+            ENDLOOP.
+            INSERT ls_complete_element INTO TABLE complete_parsed_elements.
+          ENDIF.
+
+          IF lo_open_element->prefix IS INITIAL.
+            lo_open_element = lo_writer->new_open_element( name = lo_open_element->qname-name ).
+          ELSE.
+            lo_open_element = lo_writer->new_open_element( name   = lo_open_element->qname-name
+                                                           nsuri  = lo_open_element->qname-namespace
+                                                           prefix = lo_open_element->prefix ).
+          ENDIF.
+
+          CLEAR lt_attribute_sorting.
+          LOOP AT lt_attribute INTO lo_attribute.
+            ls_attribute_sorting-prefix = lo_attribute->prefix.
+            ls_attribute_sorting-name   = lo_attribute->qname-name.
+            ls_attribute_sorting-object = lo_attribute.
+            INSERT ls_attribute_sorting INTO TABLE lt_attribute_sorting.
+          ENDLOOP.
+          SORT lt_attribute_sorting BY prefix name.
+
+          CLEAR lt_attribute.
+          LOOP AT lt_attribute_sorting INTO ls_attribute_sorting.
+            APPEND ls_attribute_sorting-object TO lt_attribute.
+          ENDLOOP.
+          lo_open_element->set_attributes( lt_attribute ).
+
+          CLEAR lt_new_nsbinding.
+          LOOP AT lt_nsbinding REFERENCE INTO lr_nsbinding.
+            READ TABLE <ls_level>-nsbindings TRANSPORTING NO FIELDS WITH KEY prefix = lr_nsbinding->prefix
+                                                                             nsuri  = lr_nsbinding->nsuri.
+            IF sy-subrc <> 0.
+              " It's the first time the default namespace is used,
+              " or if it has been changed, then declare it.
+              " (the default namespace must be set via set_attribute before the element
+              " is written, while other namespaces must be written using
+              " write_namespace_declaration after the element is written)
+              IF lr_nsbinding->prefix IS INITIAL.
+                lo_open_element->set_attribute( name  = 'xmlns'
+                                                value = lr_nsbinding->nsuri ).
+              ELSE.
+                INSERT lr_nsbinding->* INTO TABLE lt_new_nsbinding.
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+
+          lv_current_level = lv_current_level + 1.
+          ls_level-number     = lv_current_level.
+          ls_level-nsbindings = lt_nsbinding.
+          INSERT ls_level INTO TABLE lt_level ASSIGNING <ls_level>.
+
+          lo_writer->write_node( node = lo_open_element ).
+
+          SORT lt_new_nsbinding BY prefix.
+          LOOP AT lt_new_nsbinding REFERENCE INTO lr_nsbinding
+               WHERE prefix IS NOT INITIAL.
+            lo_writer->write_namespace_declaration( nsuri  = lr_nsbinding->nsuri
+                                                    prefix = lr_nsbinding->prefix ).
+          ENDLOOP.
+
+        WHEN lo_node->co_nt_final.
+          "should not happen in OO parsing
+          RAISE EXCEPTION TYPE lcx_unexpected.
+
+        WHEN lo_node->co_nt_initial.
+          "should not happen in OO parsing
+          RAISE EXCEPTION TYPE lcx_unexpected.
+
+        WHEN lo_node->co_nt_value.
+
+          lo_value_node ?= lo_node.
+          lv_string = lo_value_node->get_value( ).
+
+          lo_value_node = lo_writer->new_value( ).
+          lo_value_node->set_value( lv_string ).
+          lo_writer->write_node( lo_value_node ).
+
+        WHEN OTHERS.
+          "should not happen whatever it's OO or token parsing
+          RAISE EXCEPTION TYPE lcx_unexpected.
+      ENDCASE.
+    ENDDO.
+    rv_string = cl_abap_codepage=>convert_from( lo_string_writer->get_output( ) ).
+  ENDMETHOD.
+ENDCLASS.
+
+
+CLASS ltc_rewrite_xml_via_sxml IMPLEMENTATION.
+  METHOD default_namespace.
+    string = rewrite_xml_via_sxml(
+                 `<A xmlns="dnsuri" xmlns:nsprefix="nsuri" nsprefix:attr="1" attr="2"><B attr="3"/></A>` ).
+    cl_abap_unit_assert=>assert_equals(
+        act = string
+        exp = `<A nsprefix:attr="1" attr="2" xmlns="dnsuri" xmlns:nsprefix="nsuri"><B attr="3"/></A>` ).
+
+    set_current_parsed_element( iv_index = 1 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'A'
+                                                                    iv_namespace = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'nsprefix'
+                                                                      iv_nsuri  = 'nsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_attribute( iv_index = 1 )
+                                        exp = get_expected_attribute( iv_name      = 'attr'
+                                                                      iv_namespace = 'nsuri'
+                                                                      iv_prefix    = 'nsprefix' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_attribute( iv_index = 2 )
+                                        exp = get_expected_attribute( iv_name = 'attr' ) ).
+    set_current_parsed_element( iv_index = 2 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'B'
+                                                                    iv_namespace = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'nsprefix'
+                                                                      iv_nsuri  = 'nsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_attribute( iv_index = 1 )
+                                        exp = get_expected_attribute( iv_name = 'attr' ) ).
+  ENDMETHOD.
+
+  METHOD default_namespace_removed.
+    string = rewrite_xml_via_sxml( `<A><B xmlns="dnsuri"><C xmlns=""><D/></C></B></A>` ).
+    cl_abap_unit_assert=>assert_equals( act = string
+                                        exp = `<A><B xmlns="dnsuri"><C xmlns=""><D/></C></B></A>` ).
+
+    set_current_parsed_element( iv_index = 1 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name = 'A' ) ).
+    set_current_parsed_element( iv_index = 2 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'B'
+                                                                    iv_namespace = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+    set_current_parsed_element( iv_index = 3 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name = 'C' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_nsuri = '' ) ).
+    set_current_parsed_element( iv_index = 4 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name = 'D' ) ).
+  ENDMETHOD.
+
+  METHOD get_expected_attribute.
+    rs_result-name      = iv_name.
+    rs_result-namespace = iv_namespace.
+    rs_result-prefix    = iv_prefix.
+  ENDMETHOD.
+
+  METHOD get_expected_element.
+    rs_result-name      = iv_name.
+    rs_result-namespace = iv_namespace.
+    rs_result-prefix    = iv_prefix.
+  ENDMETHOD.
+
+  METHOD get_expected_nsbinding.
+    rs_result-prefix = iv_prefix.
+    rs_result-nsuri  = iv_nsuri.
+  ENDMETHOD.
+
+  METHOD get_parsed_element.
+    DATA lr_complete_parsed_element TYPE REF TO lcl_rewrite_xml_via_sxml=>ts_complete_element.
+
+    READ TABLE lcl_rewrite_xml_via_sxml=>complete_parsed_elements REFERENCE INTO lr_complete_parsed_element INDEX parsed_element_index.
+    IF sy-subrc = 0.
+      rs_result = lr_complete_parsed_element->element.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_parsed_element_attribute.
+    DATA lr_complete_parsed_element TYPE REF TO lcl_rewrite_xml_via_sxml=>ts_complete_element.
+
+    READ TABLE lcl_rewrite_xml_via_sxml=>complete_parsed_elements REFERENCE INTO lr_complete_parsed_element INDEX parsed_element_index.
+    IF sy-subrc = 0.
+      READ TABLE lr_complete_parsed_element->attributes INTO rs_result INDEX iv_index.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_parsed_element_nsbinding.
+    DATA lr_complete_parsed_element TYPE REF TO lcl_rewrite_xml_via_sxml=>ts_complete_element.
+
+    READ TABLE lcl_rewrite_xml_via_sxml=>complete_parsed_elements REFERENCE INTO lr_complete_parsed_element INDEX parsed_element_index.
+    IF sy-subrc = 0.
+      READ TABLE lr_complete_parsed_element->nsbindings INTO rs_result INDEX iv_index.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD namespace.
+    string = rewrite_xml_via_sxml(
+        `<nsprefix:A xmlns="dnsuri" xmlns:nsprefix="nsuri" nsprefix:attr="1" attr="2"><B attr="3"/></nsprefix:A>` ).
+    cl_abap_unit_assert=>assert_equals(
+        act = string
+        exp = `<nsprefix:A nsprefix:attr="1" attr="2" xmlns="dnsuri" xmlns:nsprefix="nsuri"><B attr="3"/></nsprefix:A>` ).
+
+    cl_abap_unit_assert=>assert_equals( act = rewrite_xml_via_sxml( `<A xmlns=""/>` )
+                                        exp = `<A xmlns=""/>` ).
+
+    cl_abap_unit_assert=>assert_equals( act = rewrite_xml_via_sxml( `<A xmlns=""><B/></A>` )
+                                        exp = `<A xmlns=""><B/></A>` ).
+
+    cl_abap_unit_assert=>assert_equals( act = rewrite_xml_via_sxml( `<A><B xmlns=""/></A>` )
+                                        exp = `<A><B xmlns=""/></A>` ).
+  ENDMETHOD.
+
+  METHOD namespace_2.
+    string = rewrite_xml_via_sxml( `<A xmlns="dnsuri" xmlns:nsprefix="nsuri"><B/><nsprefix:C/></A>` ).
+    cl_abap_unit_assert=>assert_equals( act = string
+                                        exp = `<A xmlns="dnsuri" xmlns:nsprefix="nsuri"><B/><nsprefix:C/></A>` ).
+
+    set_current_parsed_element( iv_index = 1 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'A'
+                                                                    iv_namespace = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'nsprefix'
+                                                                      iv_nsuri  = 'nsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+    set_current_parsed_element( iv_index = 2 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'B'
+                                                                    iv_namespace = 'dnsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'nsprefix'
+                                                                      iv_nsuri  = 'nsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+    set_current_parsed_element( iv_index = 3 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'C'
+                                                                    iv_namespace = 'nsuri'
+                                                                    iv_prefix    = 'nsprefix' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'nsprefix'
+                                                                      iv_nsuri  = 'nsuri' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_nsuri = 'dnsuri' ) ).
+  ENDMETHOD.
+
+  METHOD namespace_3.
+    string = rewrite_xml_via_sxml( `<a:A xmlns:a="nsuri_a"><b:B xmlns:b="nsuri_b"/></a:A>` ).
+    cl_abap_unit_assert=>assert_equals( act = string
+                                        exp = `<a:A xmlns:a="nsuri_a"><b:B xmlns:b="nsuri_b"/></a:A>` ).
+
+    set_current_parsed_element( iv_index = 1 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'A'
+                                                                    iv_namespace = 'nsuri_a'
+                                                                    iv_prefix    = 'a' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'a'
+                                                                      iv_nsuri  = 'nsuri_a' ) ).
+    set_current_parsed_element( iv_index = 2 ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element( )
+                                        exp = get_expected_element( iv_name      = 'B'
+                                                                    iv_namespace = 'nsuri_b'
+                                                                    iv_prefix    = 'b' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 1 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'b'
+                                                                      iv_nsuri  = 'nsuri_b' ) ).
+    cl_abap_unit_assert=>assert_equals( act = get_parsed_element_nsbinding( iv_index = 2 )
+                                        exp = get_expected_nsbinding( iv_prefix = 'a'
+                                                                      iv_nsuri  = 'nsuri_a' ) ).
+  ENDMETHOD.
+
+  METHOD rewrite_xml_via_sxml.
+    rv_string = lcl_rewrite_xml_via_sxml=>execute( iv_xml_string = iv_xml_string
+                                                   iv_trace      = abap_true ).
+  ENDMETHOD.
+
+  METHOD set_current_parsed_element.
+    parsed_element_index = iv_index.
+  ENDMETHOD.
+ENDCLASS.
+
+
 CLASS lcl_app IMPLEMENTATION.
 
 
   METHOD at_selection_screen.
-
-    DATA: error TYPE REF TO cx_root.
+    DATA error     TYPE REF TO cx_root.
+    DATA lv_upfile TYPE string.
+    DATA demos     TYPE ty_demos.
+    FIELD-SYMBOLS <demo> TYPE ty_demo.
 
     TRY.
 
@@ -1719,7 +2226,20 @@ CLASS lcl_app IMPLEMENTATION.
               WHEN 'ONLI'.
 
                 read_screen_fields( ).
-                SUBMIT zdemo_excel WITH p_path = p_path WITH p_checkr = abap_true AND RETURN.
+
+                lv_upfile = p_path && lv_filesep && '01_HelloWorld.xlsx'.
+                demos = get_list_of_demo_files( ).
+                LOOP AT demos ASSIGNING <demo>
+                     WHERE program IN s_prog.
+                  SUBMIT (<demo>-program)
+                         WITH p_upfile = lv_upfile
+                         WITH rb_down  = abap_true
+                         WITH rb_show  = abap_false
+                         WITH p_path   = p_path
+                         WITH p_checkr = abap_true
+                         AND RETURN.
+                ENDLOOP.
+
                 CALL SELECTION-SCREEN 1001.
 
             ENDCASE.
@@ -1730,7 +2250,10 @@ CLASS lcl_app IMPLEMENTATION.
 
               WHEN 'FC01'. " REFRESH
 
-                SUBMIT (sy-repid) WITH p_path = p_path.
+                SUBMIT (sy-repid)
+                       WITH s_prog IN s_prog
+                       WITH p_path = p_path
+                       WITH p_exaxml = p_exaxml.
 
             ENDCASE.
         ENDCASE.
@@ -1748,7 +2271,10 @@ CLASS lcl_app IMPLEMENTATION.
 
       WHEN 1001.
 
-        CALL SELECTION-SCREEN 1000.
+        SUBMIT (sy-repid) WITH s_prog  IN s_prog
+                          WITH p_path   = p_path
+                          WITH p_exaxml = p_exaxml
+                          VIA SELECTION-SCREEN.
 
     ENDCASE.
 
@@ -2130,7 +2656,8 @@ CLASS lcl_app IMPLEMENTATION.
     CLEAR alv_table.
 
     demos = get_list_of_demo_files( ).
-    LOOP AT demos ASSIGNING <demo>.
+    LOOP AT demos ASSIGNING <demo>
+        WHERE program IN s_prog.
 
       TRY.
 
@@ -2325,6 +2852,7 @@ CLASS lcl_app IMPLEMENTATION.
 
     DATA: lt_dummy   TYPE TABLE OF rsparams,
           lt_sel_255 TYPE TABLE OF rsparamsl_255.
+    DATA ls_prog LIKE LINE OF s_prog.
     FIELD-SYMBOLS:
       <ls_sel_255> TYPE rsparamsl_255.
 
@@ -2339,6 +2867,19 @@ CLASS lcl_app IMPLEMENTATION.
         no_report           = 2
         OTHERS              = 3.
 
+    " The empty SELECT-OPTIONS contain an empty line which is to be skipped.
+    DELETE lt_sel_255 WHERE     sign   IS INITIAL
+                            AND option IS INITIAL
+                            AND low    IS INITIAL
+                            AND high   IS INITIAL.
+
+    LOOP AT lt_sel_255 ASSIGNING <ls_sel_255> WHERE selname = 'S_PROG'.
+      ls_prog-sign   = <ls_sel_255>-sign.
+      ls_prog-option = <ls_sel_255>-option.
+      ls_prog-low    = <ls_sel_255>-low.
+      ls_prog-high   = <ls_sel_255>-high.
+      APPEND ls_prog TO s_prog.
+    ENDLOOP.
     READ TABLE lt_sel_255 WITH KEY selname = 'P_PATH' ASSIGNING <ls_sel_255>.
     ASSERT sy-subrc = 0.
     p_path = <ls_sel_255>-low.
@@ -2502,7 +3043,9 @@ ENDCLASS.
 
 TABLES sscrfields.
 DATA: app TYPE REF TO lcl_app.
+DATA program_dummy TYPE trdir-name.
 
+SELECT-OPTIONS s_prog FOR program_dummy.
 PARAMETERS p_path TYPE zexcel_export_dir.
 PARAMETERS p_exaxml AS CHECKBOX DEFAULT abap_true.
 
