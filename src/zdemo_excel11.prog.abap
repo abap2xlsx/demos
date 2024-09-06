@@ -35,17 +35,17 @@ INCLUDE zdemo_excel_outputopt_incl.
 PARAMETERS: md TYPE flag RADIOBUTTON GROUP act.
 
 SELECTION-SCREEN BEGIN OF BLOCK a WITH FRAME TITLE TEXT-00a.
-PARAMETERS: partnerc TYPE bu_type   DEFAULT 2, " Organizations
-            postlcod TYPE ad_pstcd1 DEFAULT '8334*',
-            country  TYPE land1     DEFAULT 'DE',
-            maxsel   TYPE bu_maxsel DEFAULT 100.
+  PARAMETERS: partnerc TYPE bu_type   DEFAULT 2, " Organizations
+              postlcod TYPE ad_pstcd1 DEFAULT '8334*',
+              country  TYPE land1     DEFAULT 'DE',
+              maxsel   TYPE bu_maxsel DEFAULT 100.
 SELECTION-SCREEN END OF BLOCK a.
 
 PARAMETERS: rel TYPE flag RADIOBUTTON GROUP act DEFAULT 'X'.
 
 SELECTION-SCREEN BEGIN OF BLOCK b WITH FRAME TITLE TEXT-00b.
-PARAMETERS: reltyp  TYPE bu_reltyp DEFAULT 'BUR011',
-            partner TYPE bu_partner DEFAULT '191'.
+  PARAMETERS: reltyp  TYPE bu_reltyp DEFAULT 'BUR011',
+              partner TYPE bu_partner DEFAULT '191'.
 SELECTION-SCREEN END OF BLOCK b.
 
 START-OF-SELECTION.
