@@ -205,6 +205,15 @@ START-OF-SELECTION.
   lo_row = lo_worksheet->get_row( ip_row = 18 ).
   lo_row->set_row_height( ip_row_height = 30 ).
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 19  ip_style = lo_style_gr_fromcenter ip_value = zcl_excel_style_fill=>c_fill_gradient_fromcenter ).
+  lo_worksheet->set_cell( ip_column = 'E' ip_row = 19  ip_style = lo_style_gr_fromcenter ip_value = 'little off fromCenter' ).
+  lo_worksheet->change_cell_style( ip_column = 'E' ip_row = 19 ip_fill_filltype = zcl_excel_style_fill=>c_fill_none
+                                                               ip_fill_gradtype_type = zcl_excel_style_fill=>c_fill_gradient_path
+                                                               ip_fill_gradtype_position1 = '0'
+                                                               ip_fill_gradtype_position2 = '1'
+                                                               ip_fill_gradtype_bottom = '0.4'
+                                                               ip_fill_gradtype_top = '0.3'
+                                                               ip_fill_gradtype_left = '0.3'
+                                                               ip_fill_gradtype_right = '0.4' ).
   lo_row = lo_worksheet->get_row( ip_row = 19 ).
   lo_row->set_row_height( ip_row_height = 30 ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 20  ip_style = lo_style_gr_diagonal45 ip_value = zcl_excel_style_fill=>c_fill_gradient_diagonal45 ).
@@ -219,6 +228,5 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 23  ip_style = lo_style_gr_diagonal135b ip_value = zcl_excel_style_fill=>c_fill_gradient_diagonal135b ).
   lo_row = lo_worksheet->get_row( ip_row = 23 ).
   lo_row->set_row_height( ip_row_height = 30 ).
-
 
   lcl_output=>output( lo_excel ).
