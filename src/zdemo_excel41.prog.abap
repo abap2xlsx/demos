@@ -78,8 +78,8 @@ DATA: go_excel2 TYPE REF TO lcl_my_zcl_excel2.
 
 
 SELECTION-SCREEN BEGIN OF BLOCK bli WITH FRAME TITLE TEXT-bli.
-PARAMETERS: rbi_1 RADIOBUTTON GROUP rbi DEFAULT 'X' , " Simple inheritance
-            rbi_2 RADIOBUTTON GROUP rbi.
+  PARAMETERS: rbi_1 RADIOBUTTON GROUP rbi DEFAULT 'X' , " Simple inheritance
+              rbi_2 RADIOBUTTON GROUP rbi.
 SELECTION-SCREEN END OF BLOCK bli.
 
 INCLUDE zdemo_excel_outputopt_incl.

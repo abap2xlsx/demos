@@ -30,21 +30,21 @@ START-OF-SELECTION.
 *    - first 3 rows will  have fontcolor set
 *    These marked cells will be used for repeatable rows/columns on printpages
 *--------------------------------------------------------------------*
-    lo_worksheet->set_area(
+  lo_worksheet->set_area(
           ip_range        = 'A1:T100'
           ip_formula      = 'CHAR(64+COLUMN())&TEXT(ROW(),"????????0")'
           ip_area         = lo_worksheet->c_area-whole ).
 
-    lo_style_changer = zcl_excel_style_changer=>create( lo_excel ).
-    lo_style_changer->set_fill_filltype( zcl_excel_style_fill=>c_fill_solid ).
-    lo_style_changer->set_fill_fgcolor_rgb( zcl_excel_style_color=>c_yellow ).
-    lo_worksheet->change_area_style(
+  lo_style_changer = zcl_excel_style_changer=>create( lo_excel ).
+  lo_style_changer->set_fill_filltype( zcl_excel_style_fill=>c_fill_solid ).
+  lo_style_changer->set_fill_fgcolor_rgb( zcl_excel_style_color=>c_yellow ).
+  lo_worksheet->change_area_style(
           ip_range        = 'A1:T3'
           ip_style_changer = lo_style_changer ).
 
-    lo_style_changer = zcl_excel_style_changer=>create( lo_excel ).
-    lo_style_changer->set_font_color_rgb( zcl_excel_style_color=>c_red ).
-    lo_worksheet->change_area_style(
+  lo_style_changer = zcl_excel_style_changer=>create( lo_excel ).
+  lo_style_changer->set_font_color_rgb( zcl_excel_style_color=>c_red ).
+  lo_worksheet->change_area_style(
           ip_range        = 'A1:D100'
           ip_style_changer = lo_style_changer ).
 

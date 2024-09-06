@@ -21,7 +21,7 @@ INCLUDE zdemo_excel_outputopt_incl.
 SELECTION-SCREEN BEGIN OF BLOCK b44 WITH FRAME TITLE txt_b44.
 
 * No line if internal table is empty
-DATA: p_mtyfil TYPE flag VALUE abap_true.
+  DATA: p_mtyfil TYPE flag VALUE abap_true.
 
 SELECTION-SCREEN END OF BLOCK b44.
 
