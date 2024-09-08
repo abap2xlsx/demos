@@ -15,6 +15,6 @@ INCLUDE zdemo_excel_outputopt_incl.
 
 
 START-OF-SELECTION.
-  lo_excel = zcl_excel_demo1=>zif_excel_demo_output~run( ).
+  lo_excel = zcl_excel_demo2=>zif_excel_demo_output~run( ).
 
   lcl_output=>output( lo_excel ).
