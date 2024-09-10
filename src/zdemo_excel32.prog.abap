@@ -146,11 +146,18 @@ ENDFORM.                    " USER_COMMAND
 * This subroutine is principal demo session
 *--------------------------------------------------------------------*
 FORM export_to_excel_conv RAISING zcx_excel.
-  DATA: lo_converter TYPE REF TO zcl_excel_converter.
+  DATA lo_converter TYPE REF TO zcl_excel_converter.
+  DATA ls_option TYPE zexcel_s_converter_option.
+
+  ls_option-filter           = abap_true.
+  ls_option-subtot           = abap_true.
+  ls_option-hidenc           = abap_true.
+  ls_option-conv_exit_length = abap_true.
 
   CREATE OBJECT lo_converter.
   lo_converter->convert(
     EXPORTING
+      is_option     = ls_option
       io_alv        = lo_salv
       it_table      = gt_sbook
       i_row_int     = 2
