@@ -77,7 +77,7 @@
     "try_without_catch": true,
     "unknown_types": false,
     "prefix_is_current_class": false,
-    "unused_variables": false,
+    "unused_variables": true,
     "abapdoc": false,
     "allowed_object_naming": true,
     "allowed_object_types": false,
