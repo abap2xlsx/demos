@@ -136,8 +136,6 @@ ENDFORM.                    " USER_COMMAND
 * This subroutine is principal demo session
 *--------------------------------------------------------------------*
 FORM export_to_excel RAISING zcx_excel.
-  DATA: lo_error   TYPE REF TO zcx_excel,
-        lv_message TYPE string.
 
 * create zcl_excel_worksheet object
 

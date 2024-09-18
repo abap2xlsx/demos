@@ -13,7 +13,6 @@ CONSTANTS:
 DATA:
   lo_excel             TYPE REF TO zcl_excel,
   lo_worksheet         TYPE REF TO zcl_excel_worksheet,
-  lo_range             TYPE REF TO zcl_excel_range,
   lv_validation_string TYPE string,
   lo_data_validation   TYPE REF TO zcl_excel_data_validation,
   lv_row               TYPE zexcel_cell_row.

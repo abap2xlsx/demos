@@ -1424,8 +1424,6 @@ CLASS lcl_xlsx_diff_viewer IMPLEMENTATION.
 
   METHOD add_tree_nodes.
 
-    FIELD-SYMBOLS:
-          <sub_files> TYPE lcl_xlsx_diff_item=>ty_diff_items.
     DATA: lt_column          TYPE treemcitab,
           diff_item          TYPE REF TO lcl_xlsx_diff_item=>ty_diff_item,
           save_node_key      TYPE i,

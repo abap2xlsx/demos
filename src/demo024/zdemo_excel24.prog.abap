@@ -13,14 +13,6 @@ DATA: lo_excel     TYPE REF TO zcl_excel,
       lo_column    TYPE REF TO zcl_excel_column,
       lo_hyperlink TYPE REF TO zcl_excel_hyperlink.
 
-DATA: lv_file      TYPE xstring,
-      lv_bytecount TYPE i,
-      lt_file_tab  TYPE solix_tab.
-
-DATA: lv_full_path      TYPE string,
-      lv_workdir        TYPE string,
-      lv_file_separator TYPE c.
-
 DATA: lv_value TYPE string.
 DATA: lv_date TYPE d VALUE '19000226',
       lv_row  TYPE i.

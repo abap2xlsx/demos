@@ -10,7 +10,6 @@ REPORT zdemo_excel31.
 
 DATA: lo_excel     TYPE REF TO zcl_excel,
       lo_worksheet TYPE REF TO zcl_excel_worksheet,
-      lo_hyperlink TYPE REF TO zcl_excel_hyperlink,
       lo_column    TYPE REF TO zcl_excel_column.
 
 
@@ -21,8 +20,7 @@ DATA: fieldval            TYPE text80,
       style_column_b      TYPE REF TO zcl_excel_style,
       style_column_b_guid TYPE zexcel_cell_style,
       style_column_c      TYPE REF TO zcl_excel_style,
-      style_column_c_guid TYPE zexcel_cell_style,
-      style_font          TYPE REF TO zcl_excel_style_font.
+      style_column_c_guid TYPE zexcel_cell_style.
 
 CONSTANTS: gc_save_file_name TYPE string VALUE '31_AutosizeWithDifferentFontSizes.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.

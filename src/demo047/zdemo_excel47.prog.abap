@@ -8,9 +8,7 @@
 REPORT zdemo_excel47.
 
 DATA: lo_excel     TYPE REF TO zcl_excel,
-      lo_worksheet TYPE REF TO zcl_excel_worksheet,
-      lo_hyperlink TYPE REF TO zcl_excel_hyperlink,
-      lo_column    TYPE REF TO zcl_excel_column.
+      lo_worksheet TYPE REF TO zcl_excel_worksheet.
 
 CONSTANTS: gc_save_file_name TYPE string VALUE '47_ColumnFormulas.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
@@ -53,7 +51,6 @@ CLASS lcl_app IMPLEMENTATION.
           ls_tblsheet2      TYPE ty_tblsheet2_line,
           lt_tblsheet2      TYPE STANDARD TABLE OF ty_tblsheet2_line,
           lt_field_catalog  TYPE zexcel_t_fieldcatalog,
-          ls_catalog        TYPE zexcel_s_fieldcatalog,
           ls_table_settings TYPE zexcel_s_table_settings,
           lo_range          TYPE REF TO zcl_excel_range.
     FIELD-SYMBOLS: <ls_field_catalog> TYPE zexcel_s_fieldcatalog.

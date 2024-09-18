@@ -77,7 +77,12 @@
     "try_without_catch": true,
     "unknown_types": false,
     "prefix_is_current_class": false,
-    "unused_variables": true,
+    "unused_variables": {
+      "exclude": ["zdemo_excel_checker"],
+      "severity": "Error",
+      "skipNames": ["ip_title"],
+      "skipAbstract": false
+    },
     "abapdoc": false,
     "allowed_object_naming": true,
     "allowed_object_types": false,

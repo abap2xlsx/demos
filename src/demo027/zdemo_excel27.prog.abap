@@ -76,8 +76,7 @@ CLASS lcl_app IMPLEMENTATION.
   METHOD main.
 
     DATA:
-      lo_style_cond TYPE REF TO zcl_excel_style_cond,
-      lo_style      TYPE REF TO zcl_excel_style.
+      lo_style_cond TYPE REF TO zcl_excel_style_cond.
 
     " Creates active sheet
     CREATE OBJECT lo_excel.

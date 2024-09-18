@@ -13,11 +13,7 @@ DATA: lo_excel     TYPE REF TO zcl_excel,
       lo_drawing   TYPE REF TO zcl_excel_drawing,
       ls_key       TYPE wwwdatatab,
       ls_header    TYPE zexcel_s_worksheet_head_foot,
-      ls_footer    TYPE zexcel_s_worksheet_head_foot,
-      lv_content   TYPE xstring.
-
-
-DATA: ls_io TYPE skwf_io.
+      ls_footer    TYPE zexcel_s_worksheet_head_foot.
 
 CONSTANTS: gc_save_file_name TYPE string VALUE 'Image_Header_Footer.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
