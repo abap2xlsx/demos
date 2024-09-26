@@ -5,12 +5,6 @@ DATA: lo_excel         TYPE REF TO zcl_excel,
       lo_worksheet     TYPE REF TO zcl_excel_worksheet,
       lo_style_changer TYPE REF TO zif_excel_style_changer.
 
-DATA: lv_row       TYPE zexcel_cell_row,
-      lv_col       TYPE i,
-      lv_row_char  TYPE char10,
-      lv_value     TYPE string,
-      ls_fontcolor TYPE zexcel_style_color_argb.
-
 CONSTANTS: gc_save_file_name TYPE string VALUE '40_Printsettings.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 

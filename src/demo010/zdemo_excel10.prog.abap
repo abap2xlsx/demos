@@ -12,8 +12,7 @@ TYPES: ty_sflight_lines TYPE TABLE OF sflight.
 
 DATA: lo_excel      TYPE REF TO zcl_excel,
       lo_worksheet  TYPE REF TO zcl_excel_worksheet,
-      lo_style_cond TYPE REF TO zcl_excel_style_cond,
-      lo_column     TYPE REF TO zcl_excel_column.
+      lo_style_cond TYPE REF TO zcl_excel_style_cond.
 
 DATA: lt_field_catalog  TYPE zexcel_t_fieldcatalog,
       ls_table_settings TYPE zexcel_s_table_settings,

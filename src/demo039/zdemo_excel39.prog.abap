@@ -14,8 +14,6 @@ DATA: lo_excel     TYPE REF TO zcl_excel,
 
 DATA lv_value TYPE i.
 
-DATA: ls_io TYPE skwf_io.
-
 DATA: ls_upper TYPE zexcel_drawing_location,
       ls_lower TYPE zexcel_drawing_location.
 

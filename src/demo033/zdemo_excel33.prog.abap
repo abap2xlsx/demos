@@ -30,8 +30,6 @@ DATA: l_cell_value TYPE zexcel_cell_value,
       ls_area      TYPE zexcel_s_autofilter_area.
 DATA: ls_option TYPE zexcel_s_converter_option.
 
-CONSTANTS: c_airlines TYPE string VALUE 'Airlines'.
-
 CONSTANTS: gc_save_file_name TYPE string VALUE '33_autofilter.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 

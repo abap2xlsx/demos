@@ -230,7 +230,6 @@ CLASS zcl_helper IMPLEMENTATION.
           day     TYPE i,
           width   TYPE f,
           height  TYPE f.
-    DATA: hyperlink TYPE REF TO zcl_excel_hyperlink.
 
     FIELD-SYMBOLS: <day_name> LIKE LINE OF day_names.
 

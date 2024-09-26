@@ -13,8 +13,6 @@ DATA: lo_excel_no_line_if_empty     TYPE REF TO zcl_excel,
       lo_worksheet_no_line_if_empty TYPE REF TO zcl_excel_worksheet,
       lo_worksheet                  TYPE REF TO zcl_excel_worksheet.
 
-DATA: lt_field_catalog    TYPE zexcel_t_fieldcatalog.
-
 DATA: gc_save_file_name TYPE string VALUE '44_iTabEmpty.csv'.
 INCLUDE zdemo_excel_outputopt_incl.
 

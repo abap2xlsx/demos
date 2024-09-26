@@ -23,8 +23,6 @@ DATA: lt_field_catalog  TYPE zexcel_t_fieldcatalog,
 
 START-OF-SELECTION.
 
-  FIELD-SYMBOLS: <fs_field_catalog> TYPE zexcel_s_fieldcatalog.
-
   " Creates active sheet
   CREATE OBJECT lo_excel.
 

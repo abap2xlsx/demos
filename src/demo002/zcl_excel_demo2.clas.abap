@@ -33,13 +33,6 @@ CLASS zcl_excel_demo2 IMPLEMENTATION.
       lo_style_gr_diagonal135   TYPE REF TO zcl_excel_style,
       lo_style_gr_diagonal135b  TYPE REF TO zcl_excel_style.
 
-    DATA: lv_file      TYPE xstring,
-      lv_bytecount TYPE i,
-      lt_file_tab  TYPE solix_tab.
-
-    DATA: lv_full_path      TYPE string,
-      lv_workdir        TYPE string,
-      lv_file_separator TYPE c.
     DATA: lo_row TYPE REF TO zcl_excel_row.
 
   " Creates active sheet

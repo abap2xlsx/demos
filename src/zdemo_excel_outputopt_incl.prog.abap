@@ -321,7 +321,6 @@ CLASS lcl_output IMPLEMENTATION.
           cl_send_request      TYPE REF TO cl_bcs,
           cl_document          TYPE REF TO cl_document_bcs,
           cl_recipient         TYPE REF TO if_recipient_bcs,
-          cl_sender            TYPE REF TO cl_cam_address_bcs,
           t_attachment_header  TYPE soli_tab,
           wa_attachment_header LIKE LINE OF t_attachment_header,
           attachment_subject   TYPE sood-objdes,
