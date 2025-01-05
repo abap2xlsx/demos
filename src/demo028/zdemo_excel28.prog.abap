@@ -23,7 +23,6 @@ DATA: lv_full_path      TYPE string,
 
 DATA lo_autofilter TYPE REF TO zcl_excel_autofilter.
 DATA ls_area       TYPE zexcel_s_autofilter_area.
-DATA lv_cell_value TYPE zexcel_cell_value.
 DATA lo_row        TYPE REF TO zcl_excel_row.
 
 CONSTANTS c_initial_date TYPE d VALUE IS INITIAL.
