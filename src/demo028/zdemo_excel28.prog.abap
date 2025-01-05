@@ -20,11 +20,21 @@ DATA: lv_file      TYPE xstring,
 DATA: lv_full_path      TYPE string,
       lv_workdir        TYPE string,
       lv_file_separator TYPE c.
+
+DATA lo_autofilter TYPE REF TO zcl_excel_autofilter.
+DATA ls_area       TYPE zexcel_s_autofilter_area.
+DATA lv_cell_value TYPE zexcel_cell_value.
+DATA lo_row        TYPE REF TO zcl_excel_row.
+
 CONSTANTS c_initial_date TYPE d VALUE IS INITIAL.
 
 CONSTANTS: lv_default_file_name TYPE string VALUE '28_HelloWorld.csv'.
 
-PARAMETERS: p_path TYPE string.
+PARAMETERS: p_path TYPE string LOWER CASE.
+
+PARAMETERS p_skip_c AS CHECKBOX DEFAULT abap_true.
+PARAMETERS p_skip_r AS CHECKBOX DEFAULT abap_true.
+PARAMETERS p_xlsx   AS CHECKBOX DEFAULT abap_false.
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_path.
 
@@ -50,11 +60,39 @@ START-OF-SELECTION.
   " Get active sheet
   lo_worksheet = lo_excel->get_active_worksheet( ).
   lo_worksheet->set_title( ip_title = 'Sheet1' ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 1 ip_value = 'Name' ).
+  lo_worksheet->set_cell( ip_column = 'B' ip_row = 1 ip_value = 'Value 1' ).
+  lo_worksheet->set_cell( ip_column = 'C' ip_row = 1 ip_value = 'Value 2' ).
+  lo_worksheet->set_cell( ip_column = 'D' ip_row = 1 ip_value = 'Column hidden' ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 2 ip_value = 'Text' ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 2 ip_value = 'Hello world' ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 3 ip_value = 'Date and time' ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 3 ip_value = sy-datum ).
   lo_worksheet->set_cell( ip_column = 'C' ip_row = 3 ip_value = sy-uzeit ).
   lo_worksheet->set_cell( ip_column = 'A' ip_row = 4 ip_value = 'Initial Date' ).
   lo_worksheet->set_cell( ip_column = 'B' ip_row = 4 ip_value = c_initial_date ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 5 ip_value = 'Row filtered out' ).
+  lo_worksheet->set_cell( ip_column = 'A' ip_row = 6 ip_value = 'Row hidden' ).
+
+  lo_autofilter = lo_excel->add_new_autofilter( io_sheet = lo_worksheet ) .
+  ls_area-row_start = 1.
+  ls_area-col_start = 1.
+  ls_area-row_end = lo_worksheet->get_highest_row( ).
+  ls_area-col_end = lo_worksheet->get_highest_column( ).
+  lo_autofilter->set_filter_area( is_area = ls_area ).
+  lo_autofilter->set_value( i_column = 1 " column A
+                            i_value  = 'Text' ).
+  lo_autofilter->set_value( i_column = 1 " column A
+                            i_value  = 'Date and time' ).
+  lo_autofilter->set_value( i_column = 1 " column A
+                            i_value  = 'Initial Date' ).
+  lo_autofilter->get_filter_area( ).
+
+  lo_row = lo_worksheet->get_row( 6 ).
+  lo_row->set_visible( abap_false ).
+
+  lo_column = lo_worksheet->get_column( 'D' ).
+  lo_column->set_visible( abap_false ).
 
   lo_column = lo_worksheet->get_column( 'B' ).
   lo_column->set_width( 11 ).
@@ -68,6 +106,8 @@ START-OF-SELECTION.
   zcl_excel_writer_csv=>set_enclosure( ip_value = '''' ).
   zcl_excel_writer_csv=>set_endofline( ip_value = cl_abap_char_utilities=>cr_lf ).
   zcl_excel_writer_csv=>set_initial_ext_date( ip_value = '' ).
+  zcl_excel_writer_csv=>set_skip_hidden_columns( p_skip_c ).
+  zcl_excel_writer_csv=>set_skip_hidden_rows( p_skip_r ).
 
   zcl_excel_writer_csv=>set_active_sheet_index( i_active_worksheet = 2 ).
 
@@ -107,3 +147,14 @@ START-OF-SELECTION.
                                                     filename     = lv_full_path
                                                     filetype     = 'BIN'
                                           CHANGING  data_tab     = lt_file_tab ).
+
+  IF p_xlsx = abap_true.
+    REPLACE FIRST OCCURRENCE OF '_Sheet1.csv' IN lv_full_path WITH '.xlsx'.
+    lo_excel_writer = NEW zcl_excel_writer_2007( ).
+    lv_file = lo_excel_writer->write_file( lo_excel ).
+    lt_file_tab = cl_bcs_convert=>xstring_to_solix( lv_file ).
+    cl_gui_frontend_services=>gui_download( EXPORTING bin_filesize = xstrlen( lv_file )
+                                                      filename     = lv_full_path
+                                                      filetype     = 'BIN'
+                                            CHANGING  data_tab     = lt_file_tab ).
+  ENDIF.
