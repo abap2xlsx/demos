@@ -150,7 +150,7 @@ START-OF-SELECTION.
 
   IF p_xlsx = abap_true.
     REPLACE FIRST OCCURRENCE OF '_Sheet1.csv' IN lv_full_path WITH '.xlsx'.
-    lo_excel_writer = NEW zcl_excel_writer_2007( ).
+    CREATE OBJECT lo_excel_writer TYPE zcl_excel_writer_2007.
     lv_file = lo_excel_writer->write_file( lo_excel ).
     lt_file_tab = cl_bcs_convert=>xstring_to_solix( lv_file ).
     cl_gui_frontend_services=>gui_download( EXPORTING bin_filesize = xstrlen( lv_file )
