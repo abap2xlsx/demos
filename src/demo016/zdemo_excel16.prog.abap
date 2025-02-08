@@ -49,82 +49,82 @@ START-OF-SELECTION.
   DATA gv_message TYPE string.
 
   CASE abap_true.
-  WHEN rb_path.
-  " File stored on frontend
-  cl_gui_frontend_services=>get_sapgui_directory( CHANGING   sapgui_directory = gv_sapgui_directory
-                                                  EXCEPTIONS cntl_error       = 1
-                                                             error_no_gui     = 2 ).
-  IF sy-subrc <> 0.
-    gv_message = |Exception { sy-subrc } during CL_GUI_FRONTEND_SERVICES=>GET_SAPGUI_DIRECTORY|.
-    MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
-    STOP.
-  ENDIF.
-  " flush to send previous call to frontend
-  cl_gui_cfw=>flush( EXCEPTIONS cntl_system_error = 1
-                                cntl_error        = 2
-                                OTHERS            = 3 ).
-  IF sy-subrc <> 0.
-    gv_message = |Exception { sy-subrc } during CL_GUI_CFW=>FLUSH|.
-    MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
-    STOP.
-  ENDIF.
+    WHEN rb_path.
+      " File stored on frontend
+      cl_gui_frontend_services=>get_sapgui_directory( CHANGING   sapgui_directory = gv_sapgui_directory
+                                                      EXCEPTIONS cntl_error       = 1
+                                                                 error_no_gui     = 2 ).
+      IF sy-subrc <> 0.
+        gv_message = |Exception { sy-subrc } during CL_GUI_FRONTEND_SERVICES=>GET_SAPGUI_DIRECTORY|.
+        MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
+        STOP.
+      ENDIF.
+      " flush to send previous call to frontend
+      cl_gui_cfw=>flush( EXCEPTIONS cntl_system_error = 1
+                                    cntl_error        = 2
+                                    OTHERS            = 3 ).
+      IF sy-subrc <> 0.
+        gv_message = |Exception { sy-subrc } during CL_GUI_CFW=>FLUSH|.
+        MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
+        STOP.
+      ENDIF.
 
-  gv_file = replace( val  = p_file
-                     sub  = '<SAPGUI-directory>'
-                     with = gv_sapgui_directory ).
-  CALL METHOD cl_gui_frontend_services=>gui_upload
-    EXPORTING
-      filename                = gv_file
-      filetype                = 'BIN'
-    IMPORTING
-      filelength              = lv_len
-    CHANGING
-      data_tab                = lt_bin
-    EXCEPTIONS
-      file_open_error         = 1
-      file_read_error         = 2
-      no_batch                = 3
-      gui_refuse_filetransfer = 4
-      invalid_type            = 5
-      no_authority            = 6
-      unknown_error           = 7
-      bad_data_format         = 8
-      header_not_allowed      = 9
-      separator_not_allowed   = 10
-      header_too_long         = 11
-      unknown_dp_error        = 12
-      access_denied           = 13
-      dp_out_of_memory        = 14
-      disk_full               = 15
-      dp_timeout              = 16
-      not_supported_by_gui    = 17
-      error_no_gui            = 18
-      OTHERS                  = 19.
-  IF sy-subrc <> 0.
-    gv_message = |Exception { sy-subrc } while uploading the file at "{ p_file }"|.
-    MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
-    STOP.
-  ENDIF.
+      gv_file = replace( val  = p_file
+                         sub  = '<SAPGUI-directory>'
+                         with = gv_sapgui_directory ).
+      CALL METHOD cl_gui_frontend_services=>gui_upload
+        EXPORTING
+          filename                = gv_file
+          filetype                = 'BIN'
+        IMPORTING
+          filelength              = lv_len
+        CHANGING
+          data_tab                = lt_bin
+        EXCEPTIONS
+          file_open_error         = 1
+          file_read_error         = 2
+          no_batch                = 3
+          gui_refuse_filetransfer = 4
+          invalid_type            = 5
+          no_authority            = 6
+          unknown_error           = 7
+          bad_data_format         = 8
+          header_not_allowed      = 9
+          separator_not_allowed   = 10
+          header_too_long         = 11
+          unknown_dp_error        = 12
+          access_denied           = 13
+          dp_out_of_memory        = 14
+          disk_full               = 15
+          dp_timeout              = 16
+          not_supported_by_gui    = 17
+          error_no_gui            = 18
+          OTHERS                  = 19.
+      IF sy-subrc <> 0.
+        gv_message = |Exception { sy-subrc } while uploading the file at "{ p_file }"|.
+        MESSAGE gv_message TYPE 'I' DISPLAY LIKE 'E'.
+        STOP.
+      ENDIF.
 
-  CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
-    EXPORTING
-      input_length = lv_len
-    IMPORTING
-      buffer       = lv_content
-    TABLES
-      binary_tab   = lt_bin
-    EXCEPTIONS
-      failed       = 1
-      OTHERS       = 2.
-  IF sy-subrc <> 0.
-    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
-               DISPLAY LIKE 'E'.
-    STOP.
-  ENDIF.
-  WHEN rb_intrn.
-  " Internal file (hardcoded)
-  PERFORM get_internal_file CHANGING lv_content.
+      CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
+        EXPORTING
+          input_length = lv_len
+        IMPORTING
+          buffer       = lv_content
+        TABLES
+          binary_tab   = lt_bin
+        EXCEPTIONS
+          failed       = 1
+          OTHERS       = 2.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                   WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+                   DISPLAY LIKE 'E'.
+        STOP.
+      ENDIF.
+    WHEN rb_intrn.
+      " Internal file (hardcoded)
+      PERFORM get_internal_file CHANGING lv_content.
   ENDCASE.
 
   " Get active sheet
