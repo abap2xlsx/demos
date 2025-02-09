@@ -78,6 +78,18 @@
      <ENTRY>Image ID (Binary Data)</ENTRY>
      <LENGTH>30</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>RB_INTRN</KEY>
+     <ENTRY>Internal file (hardcoded)</ENTRY>
+     <LENGTH>33</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>RB_PATH</KEY>
+     <ENTRY>File stored on frontend</ENTRY>
+     <LENGTH>31</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
