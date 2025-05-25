@@ -1,7 +1,7 @@
 # abap2xlsx demos
 Demonstration programs
 
-Some demos can be run direclty via https://github.com/abap2xlsx/abap2xlsx-web without installing into a real system.
+Some demos can be run direclty via https://abap2xlsx.github.io/abap2xlsx-web/ without installing into a real system.
 
 Report `ZABAP2XLSX_DEMO_SHOW` display all demo reports. Listed demo reports can be viewed and executed by double click.
 
