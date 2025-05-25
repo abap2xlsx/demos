@@ -144,7 +144,6 @@ START-OF-SELECTION.
   lo_worksheet->set_cell( ip_column = 'A' ip_row = 3 ip_value = 'Some more data' ).
 
   lo_worksheet->set_merge(
-    EXPORTING
       ip_column_start = 'A'
       ip_column_end   = 'C'
       ip_row          = 1 ).

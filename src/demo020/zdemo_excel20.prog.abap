@@ -78,7 +78,6 @@ START-OF-SELECTION.
 
   TRY.
       lo_salv->set_screen_status(
-        EXPORTING
           report        = sy-repid
           pfstatus      = 'ALV_STATUS'
           set_functions = lo_salv->c_functions_all ).

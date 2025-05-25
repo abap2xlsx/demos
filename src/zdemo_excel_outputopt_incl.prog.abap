@@ -307,9 +307,9 @@ CLASS lcl_output IMPLEMENTATION.
     APPEND error TO t_errors.
 * Errorhandling should be inserted here
 
-    cl_document->open_document_from_table( EXPORTING document_size    = bytecount
-                                                     document_table   = t_rawdata
-                                                     open_inplace     = 'X' ).
+    cl_document->open_document_from_table( document_size  = bytecount
+                                           document_table = t_rawdata
+                                           open_inplace   = 'X' ).
 
     WRITE: '.'.  " To create an output.  That way screen0 will exist
   ENDMETHOD.                    "display_online
