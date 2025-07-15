@@ -189,7 +189,6 @@ START-OF-SELECTION.
     SELECT * FROM sbook INTO TABLE bookings UP TO 4000 ROWS.
 
     lo_worksheet->bind_table(
-      EXPORTING
         ip_table          = bookings
 *        it_field_catalog  =     " Table binding field catalog
 *        is_table_settings =     " Excel table binding settings

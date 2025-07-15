@@ -46,31 +46,27 @@ START-OF-SELECTION.
 
   "set theme colors
   lo_theme->set_color(
-    EXPORTING
       iv_type         = zcl_excel_theme_color_scheme=>c_dark1
       iv_srgb         = '5F9EA0'
 *      iv_syscolorname =
 *      iv_syscolorlast =
   ).
   lo_theme->set_color(
-  EXPORTING
     iv_type         = zcl_excel_theme_color_scheme=>c_dark2
     iv_srgb         = 'FFA500'
 *      iv_syscolorname =
 *      iv_syscolorlast =
 ).
   lo_theme->set_color(
- EXPORTING
-   iv_type         = zcl_excel_theme_color_scheme=>c_light1
-   iv_srgb         = '778899'
+    iv_type         = zcl_excel_theme_color_scheme=>c_light1
+    iv_srgb         = '778899'
 *      iv_syscolorname =
 *      iv_syscolorlast =
 ).
 
   lo_theme->set_color(
- EXPORTING
-   iv_type         = zcl_excel_theme_color_scheme=>c_light1
-   iv_srgb         = '9932CC'
+    iv_type         = zcl_excel_theme_color_scheme=>c_light1
+    iv_srgb         = '9932CC'
 *      iv_syscolorname =
 *      iv_syscolorlast =
 ).
@@ -79,17 +75,15 @@ START-OF-SELECTION.
 
   "set theme latin fonts - major and minor
   lo_theme->set_latin_font(
-    EXPORTING
-      iv_type        = zcl_excel_theme_font_scheme=>c_major
-      iv_typeface    = 'Britannic Bold'
+    iv_type        = zcl_excel_theme_font_scheme=>c_major
+    iv_typeface    = 'Britannic Bold'
 *      iv_panose      =
 *      iv_pitchfamily =
 *      iv_charset     =
   ).
   lo_theme->set_latin_font(
-   EXPORTING
-     iv_type        = zcl_excel_theme_font_scheme=>c_minor
-     iv_typeface    = 'Broadway'
+    iv_type        = zcl_excel_theme_font_scheme=>c_minor
+    iv_typeface    = 'Broadway'
 *      iv_panose      =
 *      iv_pitchfamily =
 *      iv_charset     =

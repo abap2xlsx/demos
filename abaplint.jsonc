@@ -224,7 +224,7 @@
     },
     "start_at_tab": false,
     "whitespace_end": true,
-    "exporting": false,
+    "exporting": true,
     "empty_statement": false,
     "sequential_blank": true,
     "definitions_top": false,
