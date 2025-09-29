@@ -59,8 +59,8 @@ START-OF-SELECTION.
           go_error->get_source_position( IMPORTING program_name = gv_error_program_name
                                                    include_name = gv_error_include_name
                                                    source_line  = gv_error_line         ).
-          WRITE:/ 'Errormessage:'       ,gv_message.
-          WRITE:/ 'Errorposition:',
+          WRITE: / 'Errormessage:'       ,gv_message.
+          WRITE: / 'Errorposition:',
                 AT /10 'Program:'       ,gv_error_program_name,
                 AT /10 'include_name:'  ,gv_error_include_name,
                 AT /10 'source_line:'   ,gv_error_line.

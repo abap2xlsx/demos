@@ -185,8 +185,8 @@
     "line_length": false,
     "max_one_statement": false,
     "parser_error": true,
-    "space_before_colon": false,
-    "colon_missing_space": false,
+    "space_before_colon": true,
+    "colon_missing_space": true,
     "exit_or_check": {
       "allowCheck": true,
       "allowExit": false
