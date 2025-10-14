@@ -302,13 +302,10 @@ START-OF-SELECTION.
   ls_lower-row = 30.
   ls_lower-col = 20.
   lo_drawing->set_position2(
-    EXPORTING
       ip_from   = ls_upper
       ip_to     = ls_lower ).
 
-  lo_drawing->set_media(
-    EXPORTING
-      ip_media_type = zcl_excel_drawing=>c_media_type_xml ).
+  lo_drawing->set_media( zcl_excel_drawing=>c_media_type_xml ).
 
   lo_worksheet->add_drawing( lo_drawing ).
 
@@ -330,13 +327,10 @@ START-OF-SELECTION.
   ls_lower-row = 22.
   ls_lower-col = 21.
   lo_drawing->set_position2(
-    EXPORTING
       ip_from   = ls_upper
       ip_to     = ls_lower ).
 
-  lo_drawing->set_media(
-    EXPORTING
-      ip_media_type = zcl_excel_drawing=>c_media_type_xml ).
+  lo_drawing->set_media( zcl_excel_drawing=>c_media_type_xml ).
 
   lo_worksheet->add_drawing( lo_drawing ).
 
@@ -352,13 +346,10 @@ START-OF-SELECTION.
   ls_lower-row = 22.
   ls_lower-col = 10.
   lo_drawing->set_position2(
-    EXPORTING
       ip_from   = ls_upper
       ip_to     = ls_lower ).
 
-  lo_drawing->set_media(
-    EXPORTING
-      ip_media_type = zcl_excel_drawing=>c_media_type_xml ).
+  lo_drawing->set_media( zcl_excel_drawing=>c_media_type_xml ).
 
   lo_worksheet->add_drawing( lo_drawing ).
 
@@ -380,13 +371,10 @@ START-OF-SELECTION.
   ls_lower-row = 30.
   ls_lower-col = 20.
   lo_drawing->set_position2(
-    EXPORTING
       ip_from   = ls_upper
       ip_to     = ls_lower ).
 
-  lo_drawing->set_media(
-    EXPORTING
-      ip_media_type = zcl_excel_drawing=>c_media_type_xml ).
+  lo_drawing->set_media( zcl_excel_drawing=>c_media_type_xml ).
 
   lo_worksheet->add_drawing( lo_drawing ).
 
@@ -408,13 +396,10 @@ START-OF-SELECTION.
   ls_lower-row = 30.
   ls_lower-col = 20.
   lo_drawing->set_position2(
-    EXPORTING
       ip_from   = ls_upper
       ip_to     = ls_lower ).
 
-  lo_drawing->set_media(
-    EXPORTING
-      ip_media_type = zcl_excel_drawing=>c_media_type_xml ).
+  lo_drawing->set_media( zcl_excel_drawing=>c_media_type_xml ).
 
   lo_worksheet->add_drawing( lo_drawing ).
 

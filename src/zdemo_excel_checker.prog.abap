@@ -40,7 +40,7 @@ CLASS lcl_zip_cleanup_for_diff DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES : BEGIN OF ty_zip_structure,
+    TYPES: BEGIN OF ty_zip_structure,
               ref_to_structure TYPE REF TO data,
               ref_to_x         TYPE REF TO data,
               length           TYPE i,
@@ -113,7 +113,7 @@ CLASS lcl_xlsx_diff_item DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES : ty_diff_state TYPE i,
+    TYPES: ty_diff_state TYPE i,
             BEGIN OF ty_diff_item_attr,
               date TYPE cl_abap_zip=>t_file-date,
               time TYPE cl_abap_zip=>t_file-time,
@@ -426,7 +426,7 @@ CLASS lcl_app DEFINITION.
 
   PRIVATE SECTION.
 
-    TYPES : BEGIN OF ty_demo,
+    TYPES: BEGIN OF ty_demo,
               program  TYPE trdir-name,
               objid    TYPE wwwdata-objid,
               text     TYPE wwwdata-text,
@@ -572,7 +572,7 @@ CLASS lcl_zip_cleanup_for_diff IMPLEMENTATION.
 
   METHOD run.
 
-    TYPES : BEGIN OF ty_local_file_header,
+    TYPES: BEGIN OF ty_local_file_header,
               local_file_header_signature TYPE x LENGTH 4,  " 04034b50
               version_needed_to_extract   TYPE x LENGTH 2,
               general_purpose_bit_flag    TYPE x LENGTH 2,

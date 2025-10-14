@@ -283,10 +283,10 @@ CLASS lcl_output IMPLEMENTATION.
   ENDMETHOD.                    "download_backend
 
   METHOD display_online.
-    DATA:error       TYPE REF TO i_oi_error,
-         t_errors    TYPE STANDARD TABLE OF REF TO i_oi_error WITH NON-UNIQUE DEFAULT KEY,
-         cl_control  TYPE REF TO i_oi_container_control, "OIContainerCtrl
-         cl_document TYPE REF TO i_oi_document_proxy.   "Office Dokument
+    DATA: error       TYPE REF TO i_oi_error,
+          t_errors    TYPE STANDARD TABLE OF REF TO i_oi_error WITH NON-UNIQUE DEFAULT KEY,
+          cl_control  TYPE REF TO i_oi_container_control, "OIContainerCtrl
+          cl_document TYPE REF TO i_oi_document_proxy.   "Office Dokument
 
     c_oi_container_control_creator=>get_container_control( IMPORTING control = cl_control
                                                                      error   = error ).
@@ -307,9 +307,9 @@ CLASS lcl_output IMPLEMENTATION.
     APPEND error TO t_errors.
 * Errorhandling should be inserted here
 
-    cl_document->open_document_from_table( EXPORTING document_size    = bytecount
-                                                     document_table   = t_rawdata
-                                                     open_inplace     = 'X' ).
+    cl_document->open_document_from_table( document_size  = bytecount
+                                           document_table = t_rawdata
+                                           open_inplace   = 'X' ).
 
     WRITE: '.'.  " To create an output.  That way screen0 will exist
   ENDMETHOD.                    "display_online

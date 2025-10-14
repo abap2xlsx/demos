@@ -77,7 +77,6 @@ START-OF-SELECTION.
 
   TRY.
       lo_salv->set_screen_status(
-        EXPORTING
           report        = sy-repid
           pfstatus      = 'ALV_STATUS'
           set_functions = lo_salv->c_functions_all ).
@@ -156,7 +155,6 @@ FORM export_to_excel_conv RAISING zcx_excel.
 
   CREATE OBJECT lo_converter.
   lo_converter->convert(
-    EXPORTING
       is_option     = ls_option
       io_alv        = lo_salv
       it_table      = gt_sbook

@@ -255,7 +255,6 @@ START-OF-SELECTION.
       CONCATENATE month_nr '/' date_from+2(2) INTO value.
       to_row = row + 2.
       lo_worksheet->set_merge(
-        EXPORTING
           ip_column_start = to_col  " Cell Column Start
           ip_column_end   = to_col_end    " Cell Column End
           ip_row          = row       " Cell Row
@@ -263,7 +262,6 @@ START-OF-SELECTION.
       ).
     ENDIF.
     lo_worksheet->set_cell(
-      EXPORTING
         ip_column    = to_col " Cell Column
         ip_row       = row      " Cell Row
         ip_value     = value    " Cell Value
@@ -283,7 +281,6 @@ START-OF-SELECTION.
       IF NOT <img_descr>-url IS INITIAL.
         lo_hyperlink = zcl_excel_hyperlink=>create_external_link( <img_descr>-url ).
         lo_worksheet->set_cell(
-          EXPORTING
             ip_column    = from_col " Cell Column
             ip_row       = row      " Cell Row
             ip_value     = value    " Cell Value
@@ -291,7 +288,6 @@ START-OF-SELECTION.
         ).
       ELSE.
         lo_worksheet->set_cell(
-          EXPORTING
             ip_column    = from_col " Cell Column
             ip_row       = row      " Cell Row
             ip_value     = value    " Cell Value
@@ -303,7 +299,6 @@ START-OF-SELECTION.
       IF NOT <img_descr>-photographer IS INITIAL.
         value = <img_descr>-photographer.
         lo_worksheet->set_cell(
-          EXPORTING
             ip_column    = to_col_end " Cell Column
             ip_row       = row      " Cell Row
             ip_value     = value    " Cell Value
@@ -315,7 +310,6 @@ START-OF-SELECTION.
       IF p_lands = abap_true.
         row = lv_from_row - 3.
         lo_worksheet->set_cell(
-          EXPORTING
             ip_column    = from_col " Cell Column
             ip_row       = row      " Cell Row
             ip_value     = ' '      " Cell Value

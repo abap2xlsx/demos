@@ -48,9 +48,9 @@ START-OF-SELECTION.
                             iv_no_line_if_empty = p_mtyfil ).
 
 *** Create output
-  lcl_output=>output( EXPORTING cl_excel            = lo_excel_no_line_if_empty
-                                iv_writerclass_name = 'ZCL_EXCEL_WRITER_CSV' ).
+  lcl_output=>output( cl_excel            = lo_excel_no_line_if_empty
+                      iv_writerclass_name = 'ZCL_EXCEL_WRITER_CSV' ).
 
   gc_save_file_name = '44_iTabNotEmpty.csv'.
-  lcl_output=>output( EXPORTING cl_excel            = lo_excel
-                              iv_writerclass_name = 'ZCL_EXCEL_WRITER_CSV' ).
+  lcl_output=>output( cl_excel            = lo_excel
+                      iv_writerclass_name = 'ZCL_EXCEL_WRITER_CSV' ).

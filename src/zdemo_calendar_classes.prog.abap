@@ -237,7 +237,6 @@ CLASS zcl_helper IMPLEMENTATION.
     from_col_int = zcl_excel_common=>convert_column2int( i_from_col ).
     " Add description for Calendar Week
     c_worksheet->set_cell(
-      EXPORTING
         ip_column    = i_from_col    " Cell Column
         ip_row       = i_from_row    " Cell Row
         ip_value     = 'CW'(001)    " Cell Value
@@ -255,7 +254,6 @@ CLASS zcl_helper IMPLEMENTATION.
       col = zcl_excel_common=>convert_column2alpha( col_int ).
       value = <day_name>-langt.
       c_worksheet->set_cell(
-        EXPORTING
           ip_column    = col    " Cell Column
           ip_row       = row    " Cell Row
           ip_value     = value    " Cell Value
@@ -279,7 +277,6 @@ CLASS zcl_helper IMPLEMENTATION.
       CONDENSE value.
 
       c_worksheet->set_cell(
-        EXPORTING
           ip_column    = col    " Cell Column
           ip_row       = row    " Cell Row
           ip_value     = value    " Cell Value
@@ -349,7 +346,6 @@ CLASS zcl_helper IMPLEMENTATION.
     value = 'Created with https://github.com/abap2xlsx/abap2xlsx'(002).
     hyperlink = zcl_excel_hyperlink=>create_external_link( 'https://github.com/abap2xlsx/abap2xlsx' ). "#EC NOTEXT
     c_worksheet->set_cell(
-      EXPORTING
         ip_column    = i_from_col    " Cell Column
         ip_row       = i_from_row    " Cell Row
         ip_value     = value    " Cell Value
@@ -394,7 +390,6 @@ CLASS zcl_helper IMPLEMENTATION.
         WITH KEY wotnr = weekday.
       value = <day_name>-kurzt.
       c_worksheet->set_cell(
-        EXPORTING
           ip_column    = col    " Cell Column
           ip_row       = row    " Cell Row
           ip_value     = value    " Cell Value
@@ -407,7 +402,6 @@ CLASS zcl_helper IMPLEMENTATION.
       CONDENSE value.
 
       c_worksheet->set_cell(
-        EXPORTING
           ip_column    = col    " Cell Column
           ip_row       = row    " Cell Row
           ip_value     = value    " Cell Value
@@ -423,7 +417,6 @@ CLASS zcl_helper IMPLEMENTATION.
     " Add ABAP2XLSX Footer
     row = i_from_row + 2.
     c_worksheet->set_cell(
-      EXPORTING
         ip_column    = col    " Cell Column
         ip_row       = row    " Cell Row
         ip_value     = ' '    " Cell Value
@@ -465,7 +458,6 @@ CLASS zcl_helper IMPLEMENTATION.
     value = week_int.
     CONDENSE value.
     c_worksheet->set_cell(
-      EXPORTING
         ip_column    = i_col    " Cell Column
         ip_row       = i_row    " Cell Row
         ip_value     = value    " Cell Value

@@ -33,8 +33,6 @@ CONSTANTS: c_airlines TYPE string VALUE 'Airlines'.
 CONSTANTS: gc_save_file_name TYPE string VALUE '03_iTab.xlsx'.
 INCLUDE zdemo_excel_outputopt_incl.
 
-PARAMETERS: p_empty TYPE flag.
-PARAMETERS: p_checkr NO-DISPLAY TYPE abap_bool.
 
 START-OF-SELECTION.
   " Creates active sheet
@@ -46,13 +44,7 @@ START-OF-SELECTION.
 
   DATA lt_test TYPE ty_sflight_lines.
 
-  IF p_empty <> abap_true.
-    IF p_checkr = abap_true.
-      PERFORM load_fixed_data_for_checker CHANGING lt_test.
-    ELSE.
-      SELECT * FROM sflight INTO TABLE lt_test.         "#EC CI_NOWHERE
-    ENDIF.
-  ENDIF.
+  PERFORM load_fixed_data_for_checker CHANGING lt_test.
 
   ls_table_settings-table_style       = zcl_excel_table=>builtinstyle_medium2.
   ls_table_settings-show_row_stripes  = abap_true.
@@ -61,10 +53,8 @@ START-OF-SELECTION.
   lo_worksheet->bind_table( ip_table          = lt_test
                             is_table_settings = ls_table_settings ).
 
-  IF p_checkr = abap_true.
-    PERFORM set_column_headers USING lo_worksheet
-      'Airline;Flight Number;Date;Airfare;Airline Currency;Plane Type;Max. capacity econ.;Occupied econ.;Total;Max. capacity bus.;Occupied bus.;Max. capacity 1st;Occupied 1st'.
-  ENDIF.
+  PERFORM set_column_headers USING lo_worksheet
+    'Airline;Flight Number;Date;Airfare;Airline Currency;Plane Type;Max. capacity econ.;Occupied econ.;Total;Max. capacity bus.;Occupied bus.;Max. capacity 1st;Occupied 1st'.
 
   lo_worksheet->freeze_panes( ip_num_columns = 1 ip_num_rows = 1 ). "freeze column headers when scrolling
   IF lines( lt_test ) >= 1.
@@ -81,11 +71,9 @@ START-OF-SELECTION.
   lv_title = 'Data Validation'.
   lo_worksheet->set_title( lv_title ).
   lo_worksheet->set_cell( ip_row = 1 ip_column = 'A' ip_value = c_airlines ).
-  IF p_checkr = abap_true.
-    PERFORM load_scarr_data_for_checker CHANGING lt_carr.
-  ELSE.
-    SELECT * FROM scarr INTO TABLE lt_carr.             "#EC CI_NOWHERE
-  ENDIF.
+
+  PERFORM load_scarr_data_for_checker CHANGING lt_carr.
+
   LOOP AT lt_carr ASSIGNING <carr>.
     lo_worksheet->set_cell( ip_row = row ip_column = 'A' ip_value = <carr>-carrid ).
     row = row + 1.
