@@ -2547,6 +2547,10 @@ CLASS lcl_app IMPLEMENTATION.
     line-objid = 'ZDEMO_EXCEL49'.
     line-filename = '49_Bind_Table_Conversion_Exit.xlsx'.
     APPEND line TO result.
+    line-program = 'ZDEMO_EXCEL52'.
+    line-objid = 'ZDEMO_EXCEL52'.
+    line-filename = '52_Clone_Worksheet.xlsx'.
+    APPEND line TO result.
     line-program = 'ZDEMO_EXCEL_COMMENTS'.
     line-objid = 'ZDEMO_EXCEL_COMMENTS'.
     line-filename = 'Comments.xlsx'.
